@@ -31,7 +31,7 @@ class MapEffect {
         if (this.player.from) {
             this.showEl = this.player.from;
         } else {
-            this.player.attacker === this.player.id) ? this.showEl = "#my-character" : this.showEl = `#player_${this.player.attacker}`;
+            this.player.attacker === this.player.id ? this.showEl = "#my-character" : this.showEl = `#player_${this.player.attacker}`;
         }
 
         if (this.player.to) {
