@@ -5,6 +5,7 @@ class MapEffect {
         this.delta_time = 0;
         this.step = 1;
         this.el = undefined;
+        this.showEl = undefined;
 
         this.show();
     }
@@ -28,9 +29,9 @@ class MapEffect {
 
     show() {
         if (this.player.from) {
-            this.el = this.player.from;
+            this.showEl = this.player.from;
         } else {
-            this.player.attacker === player.id) ? this.el = "#my-character" : this.el = `#player_${this.player.attacker}`;
+            this.player.attacker === player.id) ? this.showEl = "#my-character" : this.showEl = `#player_${this.player.attacker}`;
         }
 
         if (this.player.to) {
@@ -41,7 +42,7 @@ class MapEffect {
 
         if (document.querySelector(this.target).length < 1 || document.querySelector(this.el).length < 1) return;
 
-        const offsetOne = document.querySelector(this.el).getBoundingClientRect();
+        const offsetOne = document.querySelector(this.showEl).getBoundingClientRect();
         const offsetTwo = document.querySelector(this.target).getBoundingClientRect();
 
         this.height = offsetOne.height;
