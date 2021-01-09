@@ -7,6 +7,14 @@
     display: inline-block;
     text-align: center;
   }
+  .ah-prevPage {
+    background: url('https://i.imgur.com/EGSPSQ4.png');
+    width: 42px;
+    height: 27px;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+  }
 </style>
 <div id="auctionBox">
 	<div class="window-2-heading">
@@ -15,7 +23,7 @@
 	</div>
 
 	<div class="window-2">
-		<div class="menu-black" style="display: inline-block; float: left;" id="page_1">
+		<div class="menu-black" style="display: block; float: left;" id="page_1">
 			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 'history');">Moje Aukcje</div>
 			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 'backpack');">Dodaj Aukcję</div>
 			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 1);">Bronie</div>
@@ -31,15 +39,14 @@
         <div class="ah-nextPage overlock" onClick="game.ahNext();"></div>
       </center>
 		</div>
-    
-		<div class="menu-black" style="display: inline-block; float: left;" id="page_2" style="display:none;">
-      <center>
-        <div class="ah-prevPage overlock" onClick="game.ahPrev();"></div>
-      </center>
-      <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 11);">Questowe</div>
-      <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 12);">Strzały</div>
-      <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 13);">Minerały</div>
-      <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 14);">Ulepsacze</div>
+		<div class="menu-black" style="display: none; float: left;" id="page_2">
+		        <center>
+				<div class="ah-prevPage overlock" onClick="game.ahPrev();"></div>
+		        </center>
+		        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 11);">Questowe</div>
+		        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('aucticns', 12);">Strzały</div>
+		        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 13);">Minerały</div>
+		        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 14);">Ulepsacze</div>
 			<div class="button-2 overlock font-20" onClick="game.singlePacket('auctions', 8);">Inne</div>
 		</div>
 
