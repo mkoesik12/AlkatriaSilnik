@@ -16,7 +16,7 @@ class MapEffect {
         this.move();
         
         if (this.step >= 18) {
-            if (this.el != undefined) {
+            if (this.el !== undefined) {
                 this.el.remove();
             } else if (document.querySelector(`.${this.guid}`).length > 0) {
                 document.querySelector(`.${this.guid}`).remove();
@@ -54,73 +54,50 @@ class MapEffect {
 
         const x = (offsetOne.left + ((this.width - 32) / 2) + mapLeft);
         const y = (offsetOne.top + ((this.height - 32) / 2) + mapTop);
-        this.top  = y;
-        this.left = x;
 
-        if (y < 1 || x < 1) {
-            return;
-        }
+        if (x < 1 || y < 1) return;
 
-        var toX = (offsetTwo.offset().left + ((this.widthTarget - 32) / 2) + mapLeft);
-        var toY = (offsetTwo.offset().top + ((this.heightTarget - 32) / 2) + mapTop);
+        const toX = (offsetTwo.left + ((this.widthTarget - 32) / 2) + mapLeft);
+        const toY = (offsetTwo.top + ((this.heightTarget - 32) / 2) + mapTop);
 
         if (this.data.ammo != undefined) {
-            var deg       = angle(x, y, toX, toY);
-            var transform = '-webkit-transform: rotate('+deg+'deg); -moz-transform: rotate('+deg+'deg);-ms-transform: rotate('+deg+'deg);-o-transform: rotate('+deg+'deg);transform: rotate('+deg+'deg);';
+            const deg = angle(x, y, toX, toY);
+            const transform = `-webkit-transform: rotate(${deg}deg); -moz-transform: rotate(${deg}deg);-ms-transform: rotate(${deg}deg);-o-transform: rotate(${deg}deg);transform: rotate(${deg}deg);`;
 
-            $('#'+map.container).append('<div class="'+this.guid+' item-animation" style="z-index: 200; background: url(/templates/client/default/images/items/'+this.data.ammo+'.png); '+transform+' left: '+x+'px; top: '+y+'px;"></div>');
+            document.querySelector(`#${map.container}`).append(`<div class="${this.guid} item-animation" style="z-index: 200; background:url('/templates/client/default/images/items/${this.player.ammo}.png'); ${transform} left: ${x}px; top:${y}px;"></div>`);
         } else if (this.data.spell) {
-            $('#'+map.container).append('<div class="'+this.guid+' animation-1" style="background: url(/assets/spells/animation_'+this.data.spell+'.gif); left: '+x+'px; top: '+y+'px;"></div>');
+            document.querySelector(`#${map.container}`).append(`<div class="${this.guid} animation-1" style="background:url('/assets/spells/animation_${this.player.spell}.gif'); left:${x}px; top:${y}px;"></div>`);
         } else {
-            $('#'+map.container).append('<div class="'+this.guid+' item-animation" style="z-index: 200; background: url(/assets/attacks/'+this.data.attack_effect+'.gif); left: '+x+'px; top: '+y+'px;"></div>');
-        }//end if
+            document.querySelector(`#${map.container}`).append(`<div class="${this.guid} item-animation" style="z-index: 200; background:url(/assets/attacks/${this.data.attack_effect}.gif); left:${x}px; top:${y}px;"></div>`);
+        }
 
-        this.el = $('.'+this.guid);
+        this.el = document.querySelector(`.${this.guid}`);
         this.move();
     }
 
     move() {
-        if (this.el == undefined || $(this.target).length < 1) {
-            return;
-        }
+        if (this.el == undefined || document.querySelector(this.target).length < 1) return;
 
-        var mapLeft = - $('#'+map.container).position().left;
-        var mapTop  = - $('#'+map.container).position().top;
-        var target = $(this.target);
+        const mapLeft = -document.querySelector(`#${map.container}`).getBoundingClientRect().left;
+        const mapTop = -document.querySelector(`#${map.container}`).getBoundingClientRect().top;
+        const target = document.querySelector(this.target);
 
-        if (target.length < 1) {
-            return;
-        }
+        if (target.length < 1) return;
 
-        var offset = target.offset();
+        const targetOffset = target.getBoundingClientRect();
 
-        if (offset.left < 1 || offset.top < 1) {
-            return;
-        }
+        if (targetOffset.left < 1 || targetOffset.top < 1) return;
 
-        var x = this.left - (offset.left + ((this.widthTarget - 32) / 2) + mapLeft);
-        var y = this.top - (offset.top + ((this.heightTarget - 32) / 2) + mapTop);
+        const x = this.left - (offset.left + ((this.widthTarget - 32) / 2) + mapLeft);
+        const y = this.top - (offset.top + ((this.heightTarget - 32) / 2) + mapTop);
 
-        var x = (- x) / 20;
-        var y = (- y) / 20;
+        const mapX = (-x) / 20;
+        const mapY = (-y) / 20;
 
-        var left = this.left + (x * this.step);
-        var top  = this.top + (y * this.step);
+        const left = this.left + (mapX * this.step);
+        const top  = this.top + (mapY * this.step);
 
-        if (this.data.ammo != undefined) {
-            //console.log('recalculate deg');
-        }//end if
-
-        this.el.css('left', left + 'px');
-        this.el.css('top', top + 'px');
+        this.el.style.left = `${left}px`;
+        this.el.style.top = `${top}px`;
     }
-
-    rotate() {
-
-    }
-
-    rotateAround() {
-        
-    }
-
 }
