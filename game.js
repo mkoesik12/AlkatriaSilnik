@@ -210,10 +210,10 @@ const game = {
 			case 964:
 				if (data.message) {
 					if (this.channel !== 2) {
-						document.querySelector('.channel-2').addClass('new-message');
+						document.querySelector(".channel-2").classList.add("new-message");
 					}
 
-					$('.chat-messages-2').append(this.getHour()+' '+data.message+'<br>');
+					document.querySelector(".chat-messages-2").append(`${this.getHour()} {${data.message}<br>);
 				}
 
 				if (data.monster == map.current_monster) {
