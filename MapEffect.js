@@ -27,7 +27,7 @@ class MapEffect {
     }
 
     show() {
-        if (this.item.from) {
+        if (this.player.from) {
             this.el = this.player.from;
         } else {
             this.player.attacker === player.id) ? this.el = "#my-character" : this.el = `#player_${this.player.attacker}`;
