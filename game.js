@@ -209,88 +209,62 @@ const game = {
 				break;
 			case 964:
 				if (data.message) {
-					if (this.channel !== 2) {
-						document.querySelector(".channel-2").classList.add("new-message");
-					}
-
+					if (this.channel !== 2) document.querySelector(".channel-2").classList.add("new-message");
 					document.querySelector(".chat-messages-2").append(`${this.getHour()} {${data.message}<br>);
 				}
-
 				if (data.monster === map.current_monster) {
 					const width = 1.22 * data.percent;
 					document.querySelector(".target-frame-health .health-bar").style.width = `${width}px`;
 					document.querySelector(".target-frame-health .health-bar").innerText = `${data.percent}%`;
 				}
-
 				map.showHealth(data);
 				player.setHealth(data.health, data.health_max);
 				break;
-
 			case 'move_outfit':
-				if (data.player == player.id || !document.getElementById('player_'+data.player)) {
-					break;
-				}
-
-				document.getElementById('player_'+data.player).style.backgroundPosition = player.outfits[data.dir - 1][0];
+				if (data.player == player.id || !document.getElementById(`player_${data.player}`)) break;
+				document.getElementById(`player_${data.player}`).style.backgroundPosition = player.outfits[data.dir - 1][0];
 				break;
-
 			case 10:
 				map.movePlayer(data);
 				break;
-
 			case 71:
 				map.loadOtherPlayer(data);
 				break;
-
 			case 30:
 				npc.startTalk(data.npc, data.data);
 				npc.setWindowAvatar(data);
 				return;
-
 			case 75:
 				map.showDamage(data);
 				break;
-
 			case 'start_tutorial':
-				$('.shadow-game').removeClass('active');
+				document.querySelector(".shadow-game").classList.remove('active');
 				game.keysStatus = 0;
 				game.close_window();
 				player.goToPosition(6, 7);
 				break;
-
 			case 'skip_tutorial':
-				$('.shadow-game').removeClass('active');
+				document.querySelector(".shadow-game").classList.remove('active');
 				game.keysStatus = 0;
 				game.close_window();
 				break;
-
 			case 1092:
-				if (data.id == player.id) {
-					$('#my-trade-item-'+data.slot).remove();
-				} else {
-					$('#other-trade-item-'+data.slot).remove();
-				}//end if
+				data.id === player.id ? document.querySelector(`#my-trade-item-${data.slot}`).remove() : document.querySelector(`#other-trade-item-${data.slot}`).remove();
 				break;
-
 			case 1020:
-				$('tr[data-mail="'+data.id+'"]').remove();
+				document.querySelector(`tr[data-mail="${data.id}"]`).remove();
 				game.showSmallAlert('Usunięto wiadomość', 1);
 				break;
-
 			case 1091:
-				var count = '';
-				if (data.count > 1) {
-					count = data.count;
-				}
-
-				if (data.id == player.id) {
-					$('.backpack-item-'+data.slot).addClass('item-hidden');
-					$('#trade-my-offers').append('<div data-slot="'+data.slot+'" onClick="player.tradeRemove('+data.slot+');" id="my-trade-item-'+data.slot+'" data-price="'+data.price+'" class="item trade-item item-'+data.item.id+'" data-tip="'+data.item.description+'<br>Cena: '+data.price+'"><div class="count">'+count+'</div></div>');
+				const count = '';
+				if (data.count > 1) count = data.count;
+				if (data.id === player.id) {
+					document.querySelector(`.backpack-item-${data.slot}`).addClass('item-hidden');
+					document.querySelector("#trade-my-offers").append(`<div data-slot="${data.slot}" onClick="player.tradeRemove('${data.slot}');" id="my-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>`);
 				} else {
-					$('#trade-other-offers').append('<div data-slot="'+data.slot+'" data-item="'+data.item.id+'" onClick="player.tradeAccept('+data.slot+');" id="other-trade-item-'+data.slot+'" data-price="'+data.price+'" class="item trade-item item-'+data.item.id+'" data-tip="'+data.item.description+'<br>Cena: '+data.price+'"><div class="count">'+count+'</div></div>');
-				}//end if
+					document.querySelector('#trade-other-offers').append('<div data-slot="${data.slot}" data-item="${data.item.id}" onClick="player.tradeAccept('${data.slot}');" id="other-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>');
+				}
 				break;
-
 			case 1090:
 				game.keysStatus = 1;
 				game.load_window('window-players-trade', 'Handel', 'window-players-trade');
