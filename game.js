@@ -37,8 +37,8 @@ const game = {
 
 	loadingBar: (percent) => {
 		const width = (821 * (percent / 100));
-		document.querySelector('.loading-percent').innerText = `${percent}%`;
-		document.querySelector('.loading-status').style.width = `${width}px`;
+		document.querySelector(".loading-percent").innerText = `${percent}%`;
+		document.querySelector(".loading-status").style.width = `${width}px`;
 	},
 
 	isLocked: (x, y) => {
@@ -48,8 +48,8 @@ const game = {
 	init: () => {
 		game.host = `wss://alkatria.pl/${server_host}`;
 
-		document.querySelector('.opacity-full').style.display = "none";
-		document.querySelector('.loading-info').innerText = "Ładowanie gry...";
+		document.querySelector(".opacity-full").style.display = "none";
+		document.querySelector(".loading-info").innerText = "Ładowanie gry...";
 		try {
 			socket = new WebSocket(game.host);
 			socket.onopen = (msg) => {
@@ -64,8 +64,8 @@ const game = {
 				game.parseServerPacket(data);
 			};
 			socket.onclose = (msg) => { 
-				document.querySelector('.opacity-full').style.display = "block";
-				document.querySelector('.loading-percent').innerText('Trwa łączenie z serwerem...');
+				document.querySelector(".opacity-full").style.display = "block";
+				document.querySelector(".loading-percent").innerText = "Trwa łączenie z serwerem...";
 				setTimeout(() => {
 					game.init();
 				}, 1000);
@@ -90,7 +90,7 @@ const game = {
 	chatMessage: (data) => {
 		data.message = data.message.replace(/(http:\/\/[^\s]+)/gi , "<a href='$1' target='_blank'>$1</a>");
 		data.message = data.message.replace(/(https:\/\/[^\s]+)/gi , "<a href='$1' target='_blank'>$1</a>");
-		const text = '';
+		const text = "";
 
 		if (data.player !== undefined) {
 			text = `${data.time} <span class="player-chat" data-name="${data.name}">${data.player}</span>: ${data.message}`;
@@ -121,7 +121,7 @@ const game = {
 
 	refresh: () => {
 		this.stopGame = false;
-		this.sendPacket('refresh', {});
+		this.sendPacket("refresh", {});
 	},
 
 	parseServerPacket: (data) => {
@@ -178,41 +178,39 @@ const game = {
 			case 5:
 				this.className = "";
 				this.effectName = "";
+				
+				this.type = infinity;
+				data.data[1] !== undefined ? this.spellData = data.data[0] & this.type = 0 : this.spellData = data.data[1] & this.type = 1;
+				
+				if (this.spellData.attack_type > 0) this.className = `damage-type-${data.data[0].attack_type}`;
 
-				if (data.data[0].attack_type > 0) this.className = `damage-type-${data.data[0].attack_type}`;
+				if (this.spellData.spell_effect !== undefined) this.effectName = `animation damage-spell-${this.spellData.spell_effect}`;
 
-				if (data.data[0].spell_effect != undefined) {
-					effectName = 'animation damage-spell-'+data.data[0].spell_effect;
-				}
-
-				if (data.data[0].ammo || data.data[0].attack_effect) {
-					game.showAttackAnimation(data.data[0]);
+				if (this.spellData.ammo || this.spellData.attack_effect) {
+					game.showAttackAnimation(this.spellData);
 				} else {
-					effectName = 'slash-'+data.data[0].dir;
+					this.effectName = `slash-${this.spellData.dir}`;
 				}
 
-				map.showDamage(data.data[0], className, effectName);
+				map.showDamage(this.spellData, this.className, this.effectName);
 
-				if (data.data[1] != undefined) {
+				if (this.type === 1) {
 					setTimeout(function() {
-						map.showDamage(data.data[1], className, effectName);
+						map.showDamage(this.spellData, className, effectName);
 					}, 180);
 				}
 				break;
-
 			case 'server_reboot':
-				alert('server_reboot');
+				alert("server_reboot");
 				break;
-
 			case 'remove_auction':
-				$('tr[data-auction="'+data.id+'"]').remove();
+				document.querySelector(`tr[data-auction="${data.id}"]`).remove();
 				game.showSmallAlert(data.message);
 				break;
-
 			case 964:
 				if (data.message) {
-					if (this.channel != 2) {
-						$('.channel-2').addClass('new-message');
+					if (this.channel !== 2) {
+						document.querySelector('.channel-2').addClass('new-message');
 					}
 
 					$('.chat-messages-2').append(this.getHour()+' '+data.message+'<br>');
