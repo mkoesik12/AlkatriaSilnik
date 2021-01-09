@@ -1,1 +1,120 @@
+<style>
+  .ah-nextPage {
+    background: url('https://i.imgur.com/rB2Q0c0.png');
+    width: 42px;
+    height: 27px;
+    cursor: pointer;
+    display: inline-block;
+    text-align: center;
+  }
+</style>
+<div id="auctionBox">
+	<div class="window-2-heading">
+		<div class="title-label overlock font-28 draggable" data-box="#auctionBox">Aukcje</div>
+		<div class="heading-close heading-3"></div>
+	</div>
 
+	<div class="window-2">
+		<div class="menu-black" style="display: inline-block; float: left;" id="page_1">
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 'history');">Moje Aukcje</div>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 'backpack');">Dodaj Aukcję</div>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 1);">Bronie</div>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 2);">Tarcze</div>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 3);">Zbroje</div>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 4);">Hełmy</div>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 7);">Rękawice</div>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 9);">Naszyjniki</div>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 5);">Pierścienie</div>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 6);">Buty</div>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 10);">Leczenie</div>
+      <center>
+        <div class="ah-nextPage overlock" onClick="game.ahNext();"></div>
+      </center>
+		</div>
+    
+		<div class="menu-black" style="display: inline-block; float: left;" id="page_2" style="display:none;">
+      <center>
+        <div class="ah-prevPage overlock" onClick="game.ahPrev();"></div>
+      </center>
+      <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 11);">Questowe</div>
+      <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 12);">Strzały</div>
+      <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 13);">Minerały</div>
+      <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 14);">Ulepsacze</div>
+			<div class="button-2 overlock font-20" onClick="game.singlePacket('auctions', 8);">Inne</div>
+		</div>
+
+		<div id="auction-content" class="black-content" style="width: 715px; position: absolute; left: 275px; top: 82px;">
+			<div class="auction-data auction-box" style="display: none">
+				<div class="search-auctions h50px mT10">
+					<input type="text" class="auction-search form-input" value="">
+					Cena:
+					<input type="text" class="auction-price-from auction-price form-input w75px" value="" placeholder="Od">
+					<input type="text" class="auction-price-to auction-price form-input w75px" value="" placeholder="Do">
+					Poziom:
+					<input type="text" class="auction-level-from auction-level form-input w75px" value="" placeholder="Od">
+					<input type="text" class="auction-level-to auction-level form-input w75px" value="" placeholder="Do">
+				</div>
+
+				<div class="overflow-auto h463px">
+					<table class="auction-list table-default">
+						<thead>
+							<tr>
+								<th style="width: 32px;">#</th>
+								<th>Przedmiot</th>
+								<th>Cena</th>
+								<th>Wystawił</th>
+								<th class="w60px"></th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+				</div>
+			</div>
+
+			<div class="auction-history auction-box" style="display: none">
+				<span class="switch-history history-add button-2 overlock font-20" data-type="current">Moje aukcje</span>
+				<span class="switch-history history-bought button-2 overlock font-20" data-type="bought">Kupione</span>
+				<span class="switch-history history-send button-2 overlock font-20" data-type="sold">Sprzedane</span>
+
+				<br /><br />
+
+				<div class="h458px" style="overflow: auto">
+					<table class="history-list table-default">
+						<thead>
+							<tr>
+								<th style="width: 32px;">#</th>
+								<th style="width: 50%;">Nazwa</th>
+								<th style="width: 120px;">Cena</th>
+								<th class="auction-option w60px"></th>
+							</tr>
+						</thead>
+						<tbody></tbody>
+					</table>
+				</div>
+			</div>
+
+			<div class="auction-add auction-box">
+				<div style="width: 275px; height: 505px;">
+					<div class="overlock-white font-28">Aukcje</div><br />
+
+					System aukcji pozwala na sprzedaż przedmiotu innemu graczowi będąc offline.
+				</div>
+
+				<div id="currentOpis" class="black-box" style="width:416px; height: 128px; overflow: auto; position: absolute; top: 0px; left: 275px; color:white;">Kliknij na przedmiot, aby dodać aukcję.</div>
+
+				<div style="left: 370px; position: absolute; top: 154px; width: 300px;">
+					<form id="form-1" action="javascript:game.sendForm(1, 'auctions', 'add');">
+						<div class="auction-item"></div>
+						<input type="hidden" name="item-slot" class="form-input" value="0">
+						<input style="width: 150px;" type="text" name="price" value="" placeholder="Cena">&nbsp;
+						<div onClick="this.parentNode.submit()" class="mT10 button-1 overlock font-20">Dodaj</div>
+					</form>
+				</div>
+
+				<div class="player-backpack item-backpack" style="width: 433px; height: 304px; left: 280px; position: absolute; top: 210px;">
+					<div id="plecak" style="position: relative; top: 4px; left: 4px;"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
