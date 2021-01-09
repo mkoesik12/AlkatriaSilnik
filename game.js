@@ -1,7 +1,6 @@
 var socket;
 
-var game = {
-
+const game = {
 	windows: {},
 	data: [],
 
@@ -36,48 +35,44 @@ var game = {
 
 	host: null,
 
-	loadingBar: function(percent) {
-		var width = (821 * (percent / 100));
-		$('.loading-percent').html(percent+'%');
-		$('.loading-status').css('width', width+'px');
+	loadingBar: (percent) => {
+		const width = (821 * (percent / 100));
+		document.querySelector('.loading-percent').innerText = `${percent}%`;
+		document.querySelector('.loading-status').style.width = `${width}px`;
 	},
 
 	isLocked: function(x, y) {
 		return false;
 	},
 
-	init: function() {
-		game.host = 'wss://alkatria.pl/' + server_host;
+	init: () => {
+		game.host = `wss://alkatria.pl/${server_host}`;
 
-		$('.opacity-full').addClass('hidden');
-		$('.loading-info').html('Ładowanie gry...');
-
+		document.querySelector('.opacity-full').className += " hidden";
+		document.querySelector('.loading-info').innerText = "Ładowanie gry...";
 		try {
 			socket = new WebSocket(game.host);
-			//console.log('WebSocket - status '+socket.readyState);
-			socket.onopen    = function(msg) {
-								    socket.send(JSON.stringify({code: 1, window: [$(window).width(), $(window).height()], token: player_token}));
-								    requestAnimationFrame(animate);
-								    game.ping();
-							   };
-			socket.onmessage = function(msg) { 
-									game.lastLog = msg.data;
-								   	//console.log("Received: "+msg.data);
-								   	var data = JSON.parse(msg.data);
-
-								   	if (data.code == 'json') {
-								   		data = ajaxRequest('/json.php?token='+data.hash, {}, false, 'GET');
-								   	}
-								   	game.parseServerPacket(data);
-							   };
+			socket.onopen = (msg) => {
+				socket.send(JSON.stringify({code: 1, window: [$(window).width(), $(window).height()], token: player_token}));
+				requestAnimationFrame(animate);
+				game.ping();
+			};
+			socket.onmessage = (msg) => { 
+				game.lastLog = msg.data;
+				const data = JSON.parse(msg.data);
+				if (data.code == 'json') {
+					data = ajaxRequest('/json.php?token='+data.hash, {}, false, 'GET');
+				};
+				game.parseServerPacket(data);
+			};
 			socket.onclose   = function(msg) { 
-									$('.opacity-full').removeClass('hidden');
-									$('.loading-percent').html('Trwa łączenie z serwerem...');
-									setTimeout(function() {
-										game.init();
-									}, 1000);
+				document.querySelector('.opacity-full').removeClass('hidden'); // tu skonczylem
+				$('.loading-percent').html('Trwa łączenie z serwerem...');
+				setTimeout(function() {
+					game.init();
+				}, 1000);
 								   //console.log("Disconnected - status "+this.readyState); 
-							   };
+			};
 		} catch (ex){ 
 			console.log(ex); 
 		}
