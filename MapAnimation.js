@@ -13,7 +13,7 @@ class MapAnimation {
     execute(delta) {
         this.delta_time += delta;
         if (this.delta_time >= this.duration) {
-            document.querySelector(`.{this.guid}`).remove();
+            document.querySelector(`.${this.guid}`).remove();
             return true;
         }
         return false;
