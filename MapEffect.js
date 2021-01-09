@@ -1,73 +1,59 @@
 class MapEffect {
-
     constructor(item) {
-        this.data       = item;
-        this.guid       = game.getGuid();
+        this.player = item;
+        this.guid = game.getGuid();
         this.delta_time = 0;
-        this.step       = 1;
-        this.el         = undefined;
+        this.step = 1;
+        this.el = undefined;
 
         this.show();
     }
 
     execute(delta) {
         this.delta_time += delta;
-        this.step        = (this.delta_time / 18);
-
+        this.step = (this.delta_time / 18);
+        
         this.move();
-
+        
         if (this.step >= 18) {
             if (this.el != undefined) {
                 this.el.remove();
-            } else if ($('.' + this.guid).length > 0) {
-                $('.' + this.guid).remove();
+            } else if (document.querySelector(`.${this.guid}`).length > 0) {
+                document.querySelector(`.${this.guid}`).remove();
             }
             return true;
         }
-
         return false;
     }
 
     show() {
-        var el;
-
-        if (this.data.from) {
-            el = this.data.from;
+        if (this.item.from) {
+            this.el = this.player.from;
         } else {
-            if (this.data.attacker == player.id) {
-                el = '#my-character';
-            } else {
-                el = '#player_'+this.data.attacker;
-            }//end if
+            this.player.attacker === player.id) ? this.el = "#my-character" : this.el = `#player_${this.player.attacker}`;
         }
 
-        if (this.data.to) {
-            if (this.data.type == 1 && parseInt(this.data.to) > 0) {
-                this.target = '.player_'+this.data.to;
-            } else {
-                this.target = this.data.to;
-            }
+        if (this.player.to) {
+            this.data.type === 1 && parseInt(this.data.to) > 0 ? this.target = `.player_${this.data.to}` : this.target = this.data.to;
         } else {
-            this.target = '#monster_'+this.data.id;
+            this.target = `#monster_${this.data.id}`;
         }
 
-        if ($(this.target).length < 1 || $(el).length < 1) {
-            return;
-        }
+        if (document.querySelector(this.target).length < 1 || document.querySelector(this.el).length < 1) return;
 
-        var offsetOne = $(el);
-        var offsetTwo = $(this.target);
+        const offsetOne = document.querySelector(this.el).getBoundingClientRect();
+        const offsetTwo = document.querySelector(this.target).getBoundingClientRect();
 
-        this.height       = offsetOne.height();
-        this.width        = offsetOne.width();
-        this.heightTarget = offsetTwo.height();
-        this.widthTarget  = offsetTwo.width();
+        this.height = offsetOne.height;
+        this.width = offsetOne.width;
+        this.heightTarget = offsetTwo.height;
+        this.widthTarget = offsetTwo.width;
 
-        var mapLeft   = - $('#'+map.container).position().left;
-        var mapTop    = - $('#'+map.container).position().top;
+        const mapLeft = -document.querySelector(`#${map.container}`).left;
+        const mapTop = -document.querySelector(`#${map.container}`).top;
 
-        var x = (offsetOne.offset().left + ((this.width - 32) / 2) + mapLeft);
-        var y = (offsetOne.offset().top + ((this.height - 32) / 2) + mapTop);
+        const x = (offsetOne.left + ((this.width - 32) / 2) + mapLeft);
+        const y = (offsetOne.top + ((this.height - 32) / 2) + mapTop);
         this.top  = y;
         this.left = x;
 
