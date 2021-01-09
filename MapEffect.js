@@ -31,13 +31,13 @@ class MapEffect {
         if (this.player.from) {
             this.showEl = this.player.from;
         } else {
-            this.player.attacker === player.id) ? this.showEl = "#my-character" : this.showEl = `#player_${this.player.attacker}`;
+            this.player.attacker === this.player.id) ? this.showEl = "#my-character" : this.showEl = `#player_${this.player.attacker}`;
         }
 
         if (this.player.to) {
-            this.data.type === 1 && parseInt(this.data.to) > 0 ? this.target = `.player_${this.data.to}` : this.target = this.data.to;
+            this.data.type === 1 && parseInt(this.player.to) > 0 ? this.target = `.player_${this.player.to}` : this.target = this.player.to;
         } else {
-            this.target = `#monster_${this.data.id}`;
+            this.target = `#monster_${this.player.id}`;
         }
 
         if (document.querySelector(this.target).length < 1 || document.querySelector(this.el).length < 1) return;
