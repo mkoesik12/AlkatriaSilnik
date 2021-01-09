@@ -41,85 +41,70 @@ const game = {
 		document.querySelector('.loading-status').style.width = `${width}px`;
 	},
 
-	isLocked: function(x, y) {
+	isLocked: (x, y) => {
 		return false;
 	},
 
 	init: () => {
 		game.host = `wss://alkatria.pl/${server_host}`;
 
-		document.querySelector('.opacity-full').className += " hidden";
+		document.querySelector('.opacity-full').style.display = "none";
 		document.querySelector('.loading-info').innerText = "Ładowanie gry...";
 		try {
 			socket = new WebSocket(game.host);
 			socket.onopen = (msg) => {
-				socket.send(JSON.stringify({code: 1, window: [$(window).width(), $(window).height()], token: player_token}));
+				socket.send(JSON.stringify({code: 1, window: [window.innerWidth, window.innerHeight], token: player_token}));
 				requestAnimationFrame(animate);
 				game.ping();
 			};
 			socket.onmessage = (msg) => { 
 				game.lastLog = msg.data;
 				const data = JSON.parse(msg.data);
-				if (data.code == 'json') {
-					data = ajaxRequest('/json.php?token='+data.hash, {}, false, 'GET');
-				};
+				if (data.code === 'json') data = ajaxRequest(`/json.php?token=${data.hash}`, {}, false, 'GET');
 				game.parseServerPacket(data);
 			};
-			socket.onclose   = function(msg) { 
-				document.querySelector('.opacity-full').removeClass('hidden'); // tu skonczylem
-				$('.loading-percent').html('Trwa łączenie z serwerem...');
-				setTimeout(function() {
+			socket.onclose = (msg) => { 
+				document.querySelector('.opacity-full').style.display = "block";
+				document.querySelector('.loading-percent').innerText('Trwa łączenie z serwerem...');
+				setTimeout(() => {
 					game.init();
 				}, 1000);
-								   //console.log("Disconnected - status "+this.readyState); 
 			};
-		} catch (ex){ 
+		} catch (ex) { 
 			console.log(ex); 
 		}
 	},
 
-	singlePacket: function(code, action) {
+	singlePacket: (code, action) => {
 		this.sendPacket(code, { action: action });
 	},
 
-	itemPacket: function(code, action, item) {
+	itemPacket: (code, action, item) => {
 		this.sendPacket(code, { action: action, item: item });
 	},
 
-	sendPacket: function(code, data) {
-		if (socket.readyState == 1) {
-			socket.send(JSON.stringify({code: code, data: data}));
-		}
+	sendPacket: (code, data) => {
+		if (socket.readyState === 1) socket.send(JSON.stringify({code: code, data: data}));
 	},
 
-	authorize: function() {
+	chatMessage: (data) => {
+		data.message = data.message.replace(/(http:\/\/[^\s]+)/gi , "<a href='$1' target='_blank'>$1</a>");
+		data.message = data.message.replace(/(https:\/\/[^\s]+)/gi , "<a href='$1' target='_blank'>$1</a>");
+		const text = '';
 
-	},
-
-	chatMessage: function(data) {
-		data.message = data.message.replace( /(http:\/\/[^\s]+)/gi , '<a href="$1" target="_blank">$1</a>');
-		data.message = data.message.replace( /(https:\/\/[^\s]+)/gi , '<a href="$1" target="_blank">$1</a>');
-		var text     = '';
-
-		if (data.player != undefined) {
-			text = data.time + ' <span class="player-chat" data-name="'+data.name+'">' + data.player+'</span>: '+data.message;
-		} else if (data.time == undefined) {
+		if (data.player !== undefined) {
+			text = `${data.time} <span class="player-chat" data-name="${data.name}">${data.player}</span>: ${data.message}`;
+		} else if (data.time === undefined) {
 			text = data.message;
 		} else {
-			text = data.time + ': '+data.message;
+			text = `${data.time}: ${data.message}`;
 		}
 
-		if (data.color != undefined) {
-			$('.chat-messages-'+data.channel).append('<span title='+data.date+' style="color: '+data.color+'">'+text+'</span><br>');
-		} else {
-			$('.chat-messages-'+data.channel).append('<span title='+data.date+'>'+text+'</span><br>');
-		}//end if
-
-		if (this.channel != data.channel) {
-			$('.channel-'+data.channel).addClass('new-message');
-		}
-
-		document.getElementById('chat-messages-'+data.channel).scrollTop = document.getElementById('chat-messages-'+data.channel).scrollHeight;
+		data.color !== undefined ? document.querySelector(`.chat-messages-${data.channel}`).append(`<span title="${data.date}" style="color: ${data.color}">${text}</span><br>`) : document.querySelector(`.chat-messages-${data.channel}`).append(`<span title="${data.date}">${text}</span><br>`);
+		
+		if (this.channel !== data.channel) document.querySelector(`.chat-messages-${data.channel}`).className += "new-message");
+		
+		document.getElementById(`chat-messages-${data.channel}`).scrollTop = document.getElementById(`chat-messages-${data.channel}`).scrollHeight;
 	},
 
 	npcDirs: [1, 2, 4, 3],
@@ -127,24 +112,20 @@ const game = {
 
 	ping_time: 0,
 
-	ping: function(ping) {
-		if (ping == undefined) {
-			ping = 'start';
-		}
+	ping: (ping) => {
+		if (ping === undefined) ping = "start";
 
 		this.ping_time = Date.now();
-		this.sendPacket('ping', { ping: ping });
+		this.sendPacket("ping", { ping: ping });
 	},
 
-	refresh: function() {
+	refresh: () => {
 		this.stopGame = false;
 		this.sendPacket('refresh', {});
 	},
 
-	parseServerPacket: function(data) {
-		if (this.stopGame && data.code < 3) {
-			return;
-		}//end if
+	parseServerPacket: (data) => {
+		if (this.stopGame && data.code < 3) return;
 
 		switch (data.code) {
 			case 1:
@@ -152,14 +133,9 @@ const game = {
 				break;
 
 			case 'multi_code':
-				data.items.forEach(function(val) {
-					if (typeof val != 'object') {
-						val = JSON.parse(val);
-					}//end if
-
-				   	if (val.code == 'json') {
-				   		val = ajaxRequest('/json.php?token='+val.hash, {}, false, 'GET');
-				   	}
+				data.items.forEach((val) => {
+					if (typeof val !== 'object') val = JSON.parse(val);
+				   	if (val.code === 'json') val = ajaxRequest('/json.php?token='+val.hash, {}, false, 'GET');
 				   	game.parseServerPacket(val);
 			   	});
 				break;
@@ -169,7 +145,7 @@ const game = {
 				break;
 
 			case 'new_mail':
-				if ($('.icon-count').length > 0) {
+				if (document.querySelector(.icon-count').length > 0) {
 					var mailsCount = parseInt($('.icon-count').html());
 					mailsCount++;
 					$('.icon-count').html(mailsCount);
