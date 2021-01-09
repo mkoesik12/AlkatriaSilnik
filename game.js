@@ -216,10 +216,10 @@ const game = {
 					document.querySelector(".chat-messages-2").append(`${this.getHour()} {${data.message}<br>);
 				}
 
-				if (data.monster == map.current_monster) {
-					var width = 1.22 * data.percent;
-					$('.target-frame-health .health-bar').css('width', width+'px');
-					$('.target-frame-health .health-bar').html(data.percent+'%');
+				if (data.monster === map.current_monster) {
+					const width = 1.22 * data.percent;
+					document.querySelector(".target-frame-health .health-bar").style.width = `${width}px`;
+					document.querySelector(".target-frame-health .health-bar").innerText = `${data.percent}%`;
 				}
 
 				map.showHealth(data);
