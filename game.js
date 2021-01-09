@@ -60,7 +60,7 @@ const game = {
 			socket.onmessage = (msg) => { 
 				game.lastLog = msg.data;
 				const data = JSON.parse(msg.data);
-				if (data.code === 'json') data = ajaxRequest(`/json.php?token=${data.hash}`, {}, false, 'GET');
+				if (data.code === 'json') data = ajaxRequest(`/json.php?token=${data.hash}`, {}, false, "GET");
 				game.parseServerPacket(data);
 			};
 			socket.onclose = (msg) => { 
@@ -126,49 +126,45 @@ const game = {
 
 	parseServerPacket: (data) => {
 		if (this.stopGame && data.code < 3) return;
-
 		switch (data.code) {
 			case 1:
 				game.chatMessage(data);
 				break;
-
 			case 'multi_code':
 				data.items.forEach((val) => {
-					if (typeof val !== 'object') val = JSON.parse(val);
-				   	if (val.code === 'json') val = ajaxRequest('/json.php?token='+val.hash, {}, false, 'GET');
+					if (typeof val !== "object") val = JSON.parse(val);
+				   	if (val.code === "json") val = ajaxRequest(`json.php?token=${val.hash}`, {}, false, "GET");
 				   	game.parseServerPacket(val);
 			   	});
 				break;
-
 			case 2:
 				map.update(data);
 				break;
-
 			case 'new_mail':
-				if (document.querySelector(.icon-count').length > 0) {
-					var mailsCount = parseInt($('.icon-count').html());
+				if (document.querySelector(".icon-count").length > 0) {
+					let mailsCount = parseInt(document.querySelector(".icon-count").innerText);
 					mailsCount++;
-					$('.icon-count').html(mailsCount);
+					document.querySelector(".icon-count").innerText = mailsCount.toString();
 				} else {
-					$('.icon-mail').append('<div class="icon-count">1</div>');
+					document.querySelector(".icon-mail").append("<div class='icon-count'>1</div>");
 				}
 				break;
-
 			case 'ping':
-				var pingTime = Date.now() - game.ping_time;
-				$('.game-ping').html(pingTime + 'ms');
+				const pingTime = Date.now() - game.ping_time;
+				if (pingTime < 99) document.querySelector('.game-ping').style.color = "lime";
+				if (pingTime > 100) document.querySelector('.game-ping').style.color = "orange";
+				if (pingTime > 300) document.querySelector('.game-ping').style.color = "red";
+				document.querySelector(".game-ping").innerText = `${pingTime}ms`;
 
-				setTimeout(function(ping) {
+				setTimeout((ping) => {
 					game.ping(ping);
 				}, 1000, pingTime);
 				break;
-
 			case 99:
 				game.broadCast(data.message);
 				break;
 
 			case 'reset_move':
-				//player.animate(300);
 				player.move = 0;
 				break;
 
@@ -177,15 +173,13 @@ const game = {
 				break;
 
 			case 4:
-				player.displayBackpack(data.data, '');
+				player.displayBackpack(data.data, "");
 				break;
 			case 5:
-				var className  = '';
-				var effectName;
+				this.className = "";
+				this.effectName = "";
 
-				if (data.data[0].attack_type > 0) {
-					className = 'damage-type-'+data.data[0].attack_type;
-				}
+				if (data.data[0].attack_type > 0) this.className = `damage-type-${data.data[0].attack_type}`;
 
 				if (data.data[0].spell_effect != undefined) {
 					effectName = 'animation damage-spell-'+data.data[0].spell_effect;
