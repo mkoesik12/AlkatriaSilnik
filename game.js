@@ -102,7 +102,7 @@ const game = {
 
 		data.color !== undefined ? document.querySelector(`.chat-messages-${data.channel}`).append(`<span title="${data.date}" style="color: ${data.color}">${text}</span><br>`) : document.querySelector(`.chat-messages-${data.channel}`).append(`<span title="${data.date}">${text}</span><br>`);
 		
-		if (this.channel !== data.channel) document.querySelector(`.chat-messages-${data.channel}`).className += "new-message");
+		if (this.channel !== data.channel) document.querySelector(`.chat-messages-${data.channel}`).className += "new-message";
 		
 		document.getElementById(`chat-messages-${data.channel}`).scrollTop = document.getElementById(`chat-messages-${data.channel}`).scrollHeight;
 	},
@@ -179,8 +179,14 @@ const game = {
 				this.className = "";
 				this.effectName = "";
 				
-				this.type = infinity;
-				data.data[1] !== undefined ? this.spellData = data.data[0] & this.type = 0 : this.spellData = data.data[1] & this.type = 1;
+				this.type = NaN;
+				if (data.data[1] !== undefined) {
+					this.spellData = data.data[0];
+					this.type = 0
+				} else {
+					this.spellData = data.data[1];
+					this.type = 1;
+				}
 				
 				if (this.spellData.attack_type > 0) this.className = `damage-type-${data.data[0].attack_type}`;
 
@@ -210,7 +216,7 @@ const game = {
 			case 964:
 				if (data.message) {
 					if (this.channel !== 2) document.querySelector(".channel-2").classList.add("new-message");
-					document.querySelector(".chat-messages-2").append(`${this.getHour()} {${data.message}<br>);
+					document.querySelector(".chat-messages-2").append(`${this.getHour()} ${data.message}<br>`);
 				}
 				if (data.monster === map.current_monster) {
 					const width = 1.22 * data.percent;
@@ -256,13 +262,13 @@ const game = {
 				game.showSmallAlert('Usunięto wiadomość', 1);
 				break;
 			case 1091:
-				const count = '';
+				var count = '';
 				if (data.count > 1) count = data.count;
 				if (data.id === player.id) {
 					document.querySelector(`.backpack-item-${data.slot}`).addClass('item-hidden');
 					document.querySelector("#trade-my-offers").append(`<div data-slot="${data.slot}" onClick="player.tradeRemove('${data.slot}');" id="my-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>`);
 				} else {
-					document.querySelector('#trade-other-offers').append('<div data-slot="${data.slot}" data-item="${data.item.id}" onClick="player.tradeAccept('${data.slot}');" id="other-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>');
+					document.querySelector('#trade-other-offers').append(`<div data-slot="${data.slot}" data-item="${data.item.id}" onClick="player.tradeAccept('${data.slot}');" id="other-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>`);
 				}
 				break;
 			case 1090:
