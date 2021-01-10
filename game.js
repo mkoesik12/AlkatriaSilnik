@@ -1,6 +1,6 @@
 var socket;
 
-const game = {
+game = {
 	windows: {},
 	data: [],
 
@@ -76,11 +76,11 @@ const game = {
 	},
 
 	singlePacket: (code, action) => {
-		this.sendPacket(code, { action: action });
+		game.sendPacket(code, { action: action });
 	},
 
 	itemPacket: (code, action, item) => {
-		this.sendPacket(code, { action: action, item: item });
+		game.sendPacket(code, { action: action, item: item });
 	},
 
 	sendPacket: (code, data) => {
@@ -90,17 +90,17 @@ const game = {
 	chatMessage: (data) => {
 		data.message = data.message.replace(/(http:\/\/[^\s]+)/gi , "<a href='$1' target='_blank'>$1</a>");
 		data.message = data.message.replace(/(https:\/\/[^\s]+)/gi , "<a href='$1' target='_blank'>$1</a>");
-		const text = "";
-
-		if (data.player !== undefined) {
-			text = `${data.time} <span class="player-chat" data-name="${data.name}">${data.player}</span>: ${data.message}`;
-		} else if (data.time === undefined) {
+		var text;
+		
+		if (data.player != undefined) {
+			text = `${data.time} <span class="player-chat" data-name="${data.name}">${data.player}</span>: $	{data.message};
+		} else if (data.time == undefined) {
 			text = data.message;
 		} else {
 			text = `${data.time}: ${data.message}`;
 		}
-
-		data.color !== undefined ? document.querySelector(`.chat-messages-${data.channel}`).append(`<span title="${data.date}" style="color: ${data.color}">${text}</span><br>`) : document.querySelector(`.chat-messages-${data.channel}`).append(`<span title="${data.date}">${text}</span><br>`);
+		
+		data.color !== undefined ? document.querySelector(`.chat-messages-${data.channel}`).append(fromHTML(`<span title="${data.date}" style="color: ${data.color}">${text}</span><br>`)) : document.querySelector(`.chat-messages-${data.channel}`).append(fromHTML(`<span title="${data.date}">${text}</span><br>`));
 		
 		if (this.channel !== data.channel) document.querySelector(`.chat-messages-${data.channel}`).className += "new-message";
 		
@@ -115,13 +115,13 @@ const game = {
 	ping: (ping) => {
 		if (ping === undefined) ping = "start";
 
-		this.ping_time = Date.now();
-		this.sendPacket("ping", { ping: ping });
+		game.ping_time = Date.now();
+		game.sendPacket("ping", { ping: ping });
 	},
 
 	refresh: () => {
 		this.stopGame = false;
-		this.sendPacket("refresh", {});
+		game.sendPacket("refresh", {});
 	},
 
 	parseServerPacket: (data) => {
@@ -146,19 +146,19 @@ const game = {
 					mailsCount++;
 					document.querySelector(".icon-count").innerText = mailsCount.toString();
 				} else {
-					document.querySelector(".icon-mail").append("<div class='icon-count'>1</div>");
+					document.querySelector(".icon-mail").append(fromHTML("<div class='icon-count'>1</div>"));
 				}
 				break;
 			case 'ping':
-				const pingTime = Date.now() - game.ping_time;
-				if (pingTime < 99) document.querySelector('.game-ping').style.color = "lime";
-				if (pingTime > 100) document.querySelector('.game-ping').style.color = "orange";
-				if (pingTime > 300) document.querySelector('.game-ping').style.color = "red";
-				document.querySelector(".game-ping").innerText = `${pingTime}ms`;
+				const CurrPing = Date.now() - game.ping_time;
+				if (CurrPing < 99) document.querySelector('.game-ping').style.color = "lime";
+				if (CurrPing > 100) document.querySelector('.game-ping').style.color = "orange";
+				if (CurrPing > 300) document.querySelector('.game-ping').style.color = "red";
+				document.querySelector(".game-ping").innerText = `${CurrPing}ms`;
 
 				setTimeout((ping) => {
 					game.ping(ping);
-				}, 1000, pingTime);
+				}, 1000, CurrPing);
 				break;
 			case 99:
 				game.broadCast(data.message);
@@ -188,7 +188,7 @@ const game = {
 					this.type = 1;
 				}
 				
-				if (this.spellData.attack_type > 0) this.className = `damage-type-${data.data[0].attack_type}`;
+				if (this.spellData.attack_type > 0) this.className = `damage-type-${this.spellData.attack_type}`;
 
 				if (this.spellData.spell_effect !== undefined) this.effectName = `animation damage-spell-${this.spellData.spell_effect}`;
 
@@ -216,7 +216,7 @@ const game = {
 			case 964:
 				if (data.message) {
 					if (this.channel !== 2) document.querySelector(".channel-2").classList.add("new-message");
-					document.querySelector(".chat-messages-2").append(`${this.getHour()} ${data.message}<br>`);
+					document.querySelector(".chat-messages-2").append(fromHTML(`${this.getHour()} ${data.message}<br>`));
 				}
 				if (data.monster === map.current_monster) {
 					const width = 1.22 * data.percent;
@@ -266,9 +266,9 @@ const game = {
 				if (data.count > 1) count = data.count;
 				if (data.id === player.id) {
 					document.querySelector(`.backpack-item-${data.slot}`).addClass('item-hidden');
-					document.querySelector("#trade-my-offers").append(`<div data-slot="${data.slot}" onClick="player.tradeRemove('${data.slot}');" id="my-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>`);
+					document.querySelector("#trade-my-offers").append(fromHTML(`<div data-slot="${data.slot}" onClick="player.tradeRemove('${data.slot}');" id="my-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>`));
 				} else {
-					document.querySelector('#trade-other-offers').append(`<div data-slot="${data.slot}" data-item="${data.item.id}" onClick="player.tradeAccept('${data.slot}');" id="other-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>`);
+					document.querySelector('#trade-other-offers').append(fromHTML(`<div data-slot="${data.slot}" data-item="${data.item.id}" onClick="player.tradeAccept('${data.slot}');" id="other-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>`));
 				}
 				break;
 			case 1090:
@@ -310,7 +310,6 @@ const game = {
 				break;
 
 			case 101:
-				//player.setPos(data.x, data.y);
 				break;
 
 			case 'quest_history':
