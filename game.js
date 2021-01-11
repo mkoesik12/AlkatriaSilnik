@@ -6,7 +6,7 @@ const gameSettings = {
 	serverCodes: {
 		s1: 1,
 		s2: "multi_code",
-		s3: 2
+		s3: 2,
 		s4: "new_mail",
 		s5: "ping",
 		s6: 99,
@@ -27,7 +27,7 @@ const gameSettings = {
 		s21: 1092,
 		s22: 1020,
 		s23: 1091,
-		s24: 1090
+		s24: 1090,
 		s25: 1015,
 		s26: 1001,
 		s27: 100,
@@ -122,7 +122,12 @@ const gameSettings = {
 		s116: "customname_item_window",
 		s117: "craft_details",
 		s118: "crafting_window"
-	}
+	},
+	clientStorage: {
+		pingTimeClient: 0,
+		pingTimeServer: 0,
+		stopGame: false
+	},
 	serverWS: `wss://alkatria.pl/${gameSettings.clientInfo.host}`,
 	serverSocket: null
 };
@@ -133,13 +138,19 @@ const gameLib = {
 
 const gameEngine = {
 	loadScript: (url) => {
-		return new Promise((resolve, reject) => {
-			const scriptElement = document.createElement("script");
-			scriptElement.onerror = reject;
-			scriptElement.onload = resolve;
-			document.currentScript.parentNode.insertBefore(scriptElement, document.currentScript);
-			scriptElement.src = url;
+		const scriptElement = document.createElement("script");
+		scriptElement.src = url;
+		document.getElementsByTagName("head")[0].appendChild(scriptElement);
+	},
+	axiosRequest: (url, data, async, type) => {
+	    if(typeof type === "undefined") const type = "POST";
+		if(type == "POST") data["token"] = gameSettings.clientInfo.token;
+		const axiosRes = axios({
+			method: type,
+			url: `https://alkatria.pl${url}`,
+			data: data,
 		});
+        return axiosRes;
 	},
 	loadingBar: (percent) => {
 		const width = (821 * (percent / 100));
@@ -159,12 +170,11 @@ const gameEngine = {
 				gameSettings.serverSocket.send(JSON.stringify({code: 1, window: [window.innerWidth, window.innerHeight], token: player_token}));
 			}
 			gameSettings.serverSocket.onmessage = (msg) => {
-				const message = JSON.parse(msg.data);
+				var message = JSON.parse(msg.data);
 				if (message.code === "json") {
-					axios.get(`/json.php?token=${data.hash}`).then((res) {
-						gameEngine.parseServerPacket(res.data);
-					});
+					message = gameEngine.axiosRequest(`/json.php?token=${data.hash}`, {}, false, 'GET');
 				}
+				game.parseServerPacket(message.data);
 			}
 			gameSettings.serverSocket.onclose = (msg) => {
 				document.querySelector(".opacity-full").classList.remove("hidden");
@@ -187,6 +197,70 @@ const gameEngine = {
 		gameEngine.sendPacket(code, { action: action, item: item });
 	},
 	chatMessage: (data) => {
+		const msg = data.message;
+		msg.replace(/(http.:\/\/[^\s]+)/gi, "<a href='$1' target='_blank'>$1</a>");
+		if (data.player !== undefined) {
+			this.msgSend = `${data.time} <span class="player-chat" data-name="${data.name}">${data.player}</span>: ${msg}`
+		} else if (data.time === undefined) {
+			this.msgSend = msg;
+		} else {
+			this.msgSend = `${data.time}: ${msg}`;
+		}
+
+		if (data.color !== undefined) {
+			document.querySelector(`.chat-messages-${data.channel}`).append(fromHTML(`<span title=${data.date} style="color: ${data.color}">${this.msgSend}</span><br>`));
+		} else {
+			document.querySelector(`.chat-messages-${data.channel}`).append(fromHTML(`<span title=${data.date}>${this.msgSend}</span><br>`));
+		}
 		
+		if (this.channel !== data.channel) {
+			document.querySelector(`.channel-${data.channel}`).classList.add('new-message');
+		}
+		
+		document.getElementById(`chat-messages-${data.channel}`).scrollTop = document.getElementById(`chat-messages-${data.channel}`).scrollHeight;
+	},
+	ping: (ping) => {
+		if (ping == undefined) ping = "start";
+
+		gameSettings.clientStorage.pingTimeServer = Date.now();
+		gameEngine.sendPacket("ping", {ping: ping});
+	},
+	refresh: () => {
+		gameSettings.clientStorage.stopGame = false;
+		gameEngine.sendPacket("refresh", {});
+	},
+	parseServerPacket: (data) => {
+		if (gameSettings.clientStorage.stopGame && data.code < 3) return;
+		switch (data.code) {
+			case s1:
+				gameEngine.chatMessage(data);
+				break;
+			case s2:
+				data.items.forEach((serverInfo) => {
+					if (typeof serverInfo !== "object") serverInfo = JSON.parse(serverInfo);
+					if (serverInfo.code === "json") {
+						serverInfo = gameEngine.axiosRequest(`/json.php?token=${data.hash}`, {}, false, "GET");
+					}
+					game.parseServerPacket(serverInfo.data);
+				});
+			case s3:
+				map.update(data);
+				break;
+			case s4:
+				if (document.querySelector(".icon-count").length > 0) {
+					let mailsCount = parseInt(document.querySelector(".icon-count").innerText);
+					mailsCount = mailsCount++;
+					document.querySelector(".icon-count").innerText = mailsCount;
+				} else {
+					document.querySelector(".icon-mail").append(fromHTML("<div class='icon-count'>1</div>"));
+				}
+			case s5:
+				gameSettings.clientStorage.pingTimeClient = Date.now() - gameSettings.clientStorage.pingTimeServer;
+				document.querySelector(".game-ping").innerText = `${gameSettings.clientStorage.pingTimeClient}ms`;
+				setTimeout((ping) => {
+					gameEngine.ping(ping);
+				}, 1000, gameSettings.clientStorage.pingTimeClient);
+				break;
+		}
 	}
 }
