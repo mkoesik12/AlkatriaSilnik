@@ -126,7 +126,8 @@ const gameSettings = {
 	clientStorage: {
 		pingTimeClient: 0,
 		pingTimeServer: 0,
-		stopGame: false
+		stopGame: false,
+		keysStatus: 0
 	},
 	serverWS: `wss://alkatria.pl/${gameSettings.clientInfo.host}`,
 	serverSocket: null
@@ -174,7 +175,7 @@ const gameEngine = {
 				if (message.code === "json") {
 					message = gameEngine.axiosRequest(`/json.php?token=${data.hash}`, {}, false, 'GET');
 				}
-				game.parseServerPacket(message.data);
+				gameEngine.parseServerPacket(message.data);
 			}
 			gameSettings.serverSocket.onclose = (msg) => {
 				document.querySelector(".opacity-full").classList.remove("hidden");
@@ -229,24 +230,52 @@ const gameEngine = {
 		gameSettings.clientStorage.stopGame = false;
 		gameEngine.sendPacket("refresh", {});
 	},
+	broadCast: (message, duration) => {
+		document.querySelector("#raidMessage").remove();
+		document.querySelector("#game").append(fromHTML(`<div id="raidMessage" class="overlock-white" style="font-size: 25px">${message}</div>`));
+		if (duration == undefined) duration = 15000;
+		gameEngine.events.push(new MapEvent({
+			type: "remove_element",
+			name: "#raidMessage"
+		});
+	},
+	showAttackAnimation: (data) => {
+        const effect = new MapEffect(data);
+        gameEngine.events.push(effect);
+	},
+	showSmallAlert: (text, type) => {
+		const uniqueID = gameEngine.getGuid();
+		document.querySelector(".small-info-alert").remove();
+		document.querySelector("body").append(fromHTML(`<div class="small-info-alert ${uniqueID} small-alert-${type}">${text}</div>`));
+		setTimeout(() => {
+            document.querySelector(`.${uniqueID}`).remove();
+        }, 15000);
+	},
+	getGuid: () => {
+	    const S4 = () => {
+	       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+	    };
+	    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+	},
 	parseServerPacket: (data) => {
 		if (gameSettings.clientStorage.stopGame && data.code < 3) return;
+		const code = gameSettings.serverCodes;
 		switch (data.code) {
-			case s1:
+			case code.s1:
 				gameEngine.chatMessage(data);
 				break;
-			case s2:
+			case code.s2:
 				data.items.forEach((serverInfo) => {
 					if (typeof serverInfo !== "object") serverInfo = JSON.parse(serverInfo);
 					if (serverInfo.code === "json") {
 						serverInfo = gameEngine.axiosRequest(`/json.php?token=${data.hash}`, {}, false, "GET");
 					}
-					game.parseServerPacket(serverInfo.data);
+					gameEngine.parseServerPacket(serverInfo.data);
 				});
-			case s3:
+			case code.s3:
 				map.update(data);
 				break;
-			case s4:
+			case code.s4:
 				if (document.querySelector(".icon-count").length > 0) {
 					let mailsCount = parseInt(document.querySelector(".icon-count").innerText);
 					mailsCount = mailsCount++;
@@ -254,13 +283,111 @@ const gameEngine = {
 				} else {
 					document.querySelector(".icon-mail").append(fromHTML("<div class='icon-count'>1</div>"));
 				}
-			case s5:
+			case code.s5:
 				gameSettings.clientStorage.pingTimeClient = Date.now() - gameSettings.clientStorage.pingTimeServer;
 				document.querySelector(".game-ping").innerText = `${gameSettings.clientStorage.pingTimeClient}ms`;
 				setTimeout((ping) => {
 					gameEngine.ping(ping);
 				}, 1000, gameSettings.clientStorage.pingTimeClient);
 				break;
+			case code.s6:
+				gameEngine.broadCast(data.message);
+				break;
+			case code.s7:
+				player.move = 0;
+				break;
+			case code.s8:
+				player.refreshBackpack(data.backpack);
+				break;
+			case code.s9:
+				player.displayBackpack(data.data, "");
+				break;
+			case code.s10:				
+				var className, effectName;
+				if (data.data[0].attack_type > 0) className = `damage-type-${data.data[0].attack_type}`;
+				if (data.data[0].spell_effect !== undefined) effectName = `animation damage-spell-${data.data[0].spell_effect}`;
+				if (data.data[0].ammo || data.data[0].attack_effect) {
+					gameEngine.showAttackAnimation(data.data[0]);
+				} else {
+					effectName = `slash-${data.data[0].dir}`;
+				}
+				map.showDamage(data.data[0], className, effectName);
+				if (data.data[1] !== undefined) {
+					setTimeout(() => {
+						map.showDamage(data.data[1], className, effectName);
+					}, 180);
+				}
+				break;
+			case code.s11:
+				alert('Raczej nigdy nie zostanie to uzyte ale mimo wszystko jest to server_reboot');
+				break;
+			case code.s12:
+				document.querySelector(`tr[data-auction="${data.id}"]`).remove();
+				gameEngine.showSmallAlert(data.message);
+				break;
+			case code.s13:
+				if (data.message) {
+					if (this.channel !== 2) document.querySelector(".channel-2").classList.add("new-message");
+					document.querySelector(".chat-messages-2").append(fromHTML(`${this.getHour()} ${data.message}<br>`));
+				}
+				if (data.monster == map.current_monster) {
+					const width = 1.22 * data.percent;
+					document.querySelector(".target-frame-health .health-bar").style.width = `${width}px`;
+					document.querySelector(".target-frame-health .health-bar").innerText = `${data.percent}%`;
+				}
+				map.showHealth(data);
+				player.setHealth(data.health, data.health_max);
+				break;
+			case code.s14:
+				if (data.player === player.id || !document.getElementById(`player_${data.player}`)) break;
+				document.getElementById(`player_${data.player]`).style.backgroundPosition = player.outfits[data.dir - 1][0];
+				break;
+			case code.s15:
+				map.movePlayer(data);
+				break;
+			case code.s16:
+				map.loadOtherPlayer(data);
+				break;
+			case code.s17:
+				npc.startTalk(data.npc, data.data);
+				npc.setWindowAvatar(data);
+				return;
+			case code.s18:
+				map.showDamage(data);
+				break;
+			case code.s19:
+				document.querySelector(".shadow-game").classList.remove("active");
+				gameEngine.clientStorage.keysStatus = 0;
+				gameEngine.close_window();
+				player.goToPosition(6, 7);
+				break;
+			case code.s20:
+				document.querySelector(".shadow-game").classList.remove("active");
+				gameEngine.clientStorage.keysStatus = 0;
+				gameEngine.close_window();
+				break;
+			case code.s21:
+				if (data.id === player.id) {
+					document.querySelector(`#my-trade-item-${data.slot}`).remove();
+				} else {
+					document.querySelector(`#other-trade-item-${data.slot}`).remove();
+				}
+				break;
+			case code.s22:
+				document.querySelector(`tr[data-mail="${data.id}"]`).remove();
+				game.showSmallAlert("Usunięto wiadomość", 1);
+				break;
+			case code.s23:
+				let count = 0;
+				if (data.count > 1) {
+					count = data.count;
+				}
+				if (data.id === player.id) {
+					document.querySelector(`.backpack-item-${data.slot}`).classList.add('item-hidden');
+					document.querySelector("#trade-my-offers").append(`<div data-slot="${data.slot}" onClick="player.tradeRemove(${data.slot});" id="my-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>`);
+				} else {
+					
+				}
 		}
 	}
 }
