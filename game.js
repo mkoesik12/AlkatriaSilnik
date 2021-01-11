@@ -30,7 +30,7 @@ const gameSettings = {
 		s24: 1090,
 		s25: 1015,
 		s26: 1001,
-		s27: 100,
+		s27: "teleport",
 		s28: 101,
 		s29: "quest_history",
 		s30: 368,
@@ -127,9 +127,10 @@ const gameSettings = {
 		pingTimeClient: 0,
 		pingTimeServer: 0,
 		stopGame: false,
-		keysStatus: 0
+		keysStatus: 0,
+		backDirs: [2,1,3,4]
 	},
-	serverWS: `wss://alkatria.pl/${gameSettings.clientInfo.host}`,
+	serverWS: `wss://alkatria.pl/${window.server_host}`,
 	serverSocket: null
 };
 
@@ -144,7 +145,7 @@ const gameEngine = {
 		document.getElementsByTagName("head")[0].appendChild(scriptElement);
 	},
 	axiosRequest: (url, data, async, type) => {
-	    if(typeof type === "undefined") const type = "POST";
+	    if(typeof type === "undefined") type = "POST";
 		if(type == "POST") data["token"] = gameSettings.clientInfo.token;
 		const axiosRes = axios({
 			method: type,
@@ -159,7 +160,7 @@ const gameEngine = {
 		document.querySelector(".loading-status").style.width = `${width}px`;
 	},
 	isLocked: () => {
-		return false; // tia ja tez nie wiem po co to.
+		return false;
 	},
 	init: () => {
 		loadScript(gameLib.axios);
@@ -179,7 +180,7 @@ const gameEngine = {
 			}
 			gameSettings.serverSocket.onclose = (msg) => {
 				document.querySelector(".opacity-full").classList.remove("hidden");
-				document.querySelector(".loading-percent").innerText = "Trwa łączenie z serwerem...");
+				document.querySelector(".loading-percent").innerText = "Trwa łączenie z serwerem...";
 				setTimeout(() => {
 					gameEngine.init();
 				}, 1000);
@@ -237,7 +238,7 @@ const gameEngine = {
 		gameEngine.events.push(new MapEvent({
 			type: "remove_element",
 			name: "#raidMessage"
-		});
+		}));
 	},
 	showAttackAnimation: (data) => {
         const effect = new MapEffect(data);
@@ -340,7 +341,7 @@ const gameEngine = {
 				break;
 			case code.s14:
 				if (data.player === player.id || !document.getElementById(`player_${data.player}`)) break;
-				document.getElementById(`player_${data.player]`).style.backgroundPosition = player.outfits[data.dir - 1][0];
+				document.getElementById(`player_${data.player}`).style.backgroundPosition = player.outfits[data.dir - 1][0];
 				break;
 			case code.s15:
 				map.movePlayer(data);
@@ -384,10 +385,81 @@ const gameEngine = {
 				}
 				if (data.id === player.id) {
 					document.querySelector(`.backpack-item-${data.slot}`).classList.add('item-hidden');
-					document.querySelector("#trade-my-offers").append(`<div data-slot="${data.slot}" onClick="player.tradeRemove(${data.slot});" id="my-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>`);
+					document.querySelector("#trade-my-offers").append(fromHTML(`<div data-slot="${data.slot}" onClick="player.tradeRemove(${data.slot});" id="my-trade-item-${data.slot}" data-price="${data.price}" class="item trade-item item-${data.item.id}" data-tip="${data.item.description}<br>Cena: ${data.price}"><div class="count">${count}</div></div>`));
 				} else {
 					
 				}
+			case code.s24:
+				gameEngine.clientStorage.keysStatus = 1;
+				gameEngine.load_window("window-players-trade", "Handel", "window-players-trade");
+				windowDisplay.displayBackpack("plecak", data.backpack, 5);
+				player.trade_player = data.id;
+				document.querySelector(".trade-with").innerText = data.player;
+				break;
+			case code.s25:
+				document.querySelector(`#tile_${data.x}-${data.y}`).remove();
+				document.querySelector(`#tile_${data.x}-${data.y}_tip`).remove();
+				alert(data.msg);
+				break;
+			case code.s26:
+				document.querySelector(`.clan-members tbody tr[data-id="${data.player}"]`).remove();
+				break;
+			case code.s27:
+				case 100:
+					player.stopMove = 1;
+					if (map.audio) {
+						map.audio.pause();
+						map.audio = null;
+					}
+					setTimeout(function() {
+						map.loadMap(data.data);
+					}, 300);
+					break;
+			case code.s28:
+				break;
+			case code.s29:
+				windowDisplay.showQuestHistory(data.data);
+				break;
+			case code.s30:
+				if (data.type === 1) {
+					document.querySelector(`.spell-shortcut-${data.slot}`).remove();
+				} else {
+					document.querySelector(".shortcut-box").append(fromHTML(`<div data-slot="${data.slot}" style="background: url(/assets/spells/icon_${data.data.id}.png);" data-spell="${data.data.id}" data-type="${data.data.type}" id="spell-shortcut-${data.slot}" class="spell-shortcut draggable spell-shortcut-${data.slot} spell-${data.data.id} spell" data-tip="${data.data.name}"></div>`));
+				}
+				break;
+			case code.s31:
+				document.querySelector(".skill-points").innerText = data.points;
+				document.querySelector(`#skill-item-${data.spell}`).classList.add('draggable');
+				document.querySelector(`.skill-level-${data.spell}`).innerText = data.level;
+				break;
+			case code.s32:
+				spells.parsePacket(data);
+				break;
+			case code.s33:
+				player.move = 0;
+				gameSettings.clientStorage.keysStatus = 1;
+				setTimeout(() => {
+					player.movePlayer(gameSettings.clientStorage.backDirs[data.dir - 1], 1);
+					gameSettings.clientStorage.keysStatus = 0;
+				}, 300);
+				break;
+			case code.s34:
+				if (data.gold) player.setGold(data.gold);
+				if (data.id !== player.id) {
+					document.querySelector(`#my-trade-item-${data.slot_offer}`).remove();
+				} else {
+					document.querySelector(`#other-trade-item-${data.slot_offer}`).remove();
+				}
+				if (data.message !== undefined) game.showSmallAlert(data.message);
+				if (data.item) {
+					let count = 0;
+					if (data.item.count > 1) {
+						count = data.item.count;
+					}
+					document.querySelector("#plecak").append(fromHTML(`<div data-id="${data.item.id}" data-count="${data.item.count}" data-tip-type="${data.item.type}" onClick="player.tradeItem(${data.to_slot})" id="item_${data.to_slot}" data-tip="${data.item.description}" class="item backpack-item-${data.to_slot} item-${data.item.id} backpack-item"><div class="count">${count}</div></div>`));
+				}
+				if (data.slot !== undefined) document.querySelector(`.backpack-item-${data.slot}`).remove();
+				break;
 		}
 	}
 }
