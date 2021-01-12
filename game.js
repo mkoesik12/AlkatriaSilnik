@@ -129,7 +129,9 @@ const gameSettings = {
 		stopGame: false,
 		keysStatus: 0,
 		backDirs: [2,1,3,4],
-		data: []
+		data: [],
+		monsters: [],
+		events: []
 	},
 	serverWS: `wss://alkatria.pl/${window.server_host}`,
 	serverSocket: null
@@ -641,6 +643,85 @@ const gameEngine = {
 					gameEngine.sendPacket(1052, {action: "revoke", player: gameSettings.clientStorage.data.id});
 					gameEngine.closeModalQuestion();
 				};
+				break;
+			case code.s60:
+				gameEngine.showModalQuestion(`Gracz ${data.player} zaprosił Cię do handlu.<br>Czy akceptujesz zaproszenie?`);
+				gameSettings.clientStorage.data = data;
+
+				document.getElementById("modal-accept").onclick = () => {
+					gameEngine.sendPacket(1051, {action: 2, player: gameSettings.clientStorage.data.id});
+					gameEngine.closeModalQuestion();
+				};
+
+				document.getElementById("modal-remove").onclick = () => {
+					gameEngine.sendPacket(1051, {action: 7, player: gameSettings.clientStorage.data.id});
+					gameEngine.closeModalQuestion();
+				};
+				break;
+			case code.s61:
+				if (gameEngine.clientStorage.monsters[data.id]) gameEngine.clientStorage.monsters[data.id].is_death = true;
+				const ev = new MapEvent({
+					type: "monster_death",
+					id: data.id,
+				}, 320);
+				gameEngine.clientStorage.events.push(event);
+				break;
+			case code.s62:
+				map.updateData(data.data);
+				break;
+			case code.s63:
+				npc.parsePacket(data.data);
+				break;
+			case code.s64:
+				windowDisplay.mails = data.data;
+				windowDisplay.displayMails(0);
+				document.querySelector(".mails-received-count").innerText = windowDisplay.mails[0].length;
+				document.querySelector(".mails-send-count").innerText = windowDisplay.mails[1].length;
+				document.querySelector(".mails-admin-count").innerText = windowDisplay.mails[3].length;
+				break;
+			case code.s65:
+				windowDisplay.mails = data.data;
+				document.querySelector(".mails-received-count").innerText = windowDisplay.mails[0].length;
+				document.querySelector(".mails-send-count").innerText = windowDisplay.mails[1].length;
+				alert("Wiadomość została wysłana");
+				document.getElementById("form-mail").reset();
+				windowDisplay.displayMailById(data.id, 1);
+				break;
+			case code.s66:
+				const path = data.path;
+				for (let i = 0; i < path.length; i++) {
+					player.movePlayer(path[i], 0);
+				}
+				break;
+			case code.s67:
+				document.querySelector(`.clan-ranks-table tbody td[data-rank="${data.rank}"]`).remove();
+				break;
+			case code.s68:
+				document.querySelector(".clan-invites-list").style.display = "block";
+				document.querySelector(".clan-invites tbody").append(fromHTML(`<tr class="clan-invite-${data.data.player_id}"><td>${data.data.name}</td><td>${data.data.rank}</td><td>${data.data.date}</td><td><div class="button-1 trade-sell overlock font-20" onClick="game.itemPacket('clans', 'remove_invite', ${data.data.player_id})">Usuń</div></td></tr>`));
+				document.getElementById("form-12").reset();
+				break;
+			case code.s69:
+				document.querySelector(`.loot-${data.slot}`).remove();
+				break;
+			case code.s70:
+				document.querySelector(`.${data.type}-item-${data.from}`).remove();
+				document.querySelector(`.shortcut-item-${data.to}`).innerText = data.count;
+				break;
+			case code.s71:
+				gameEngine.loadingBar(0);
+				document.querySelector(".loading").classList.remove("hidden");
+				const load = gameEngine.axiosRequest(`/json.php?token=${data.token}`, {}, false, "GET");
+				player.stopMove = 1;
+				setTimeout(function() {
+					map.loadMap(load.data);
+					if (load.data.tutorial) {
+						setTimeout(function() {
+							document.querySelector(".shadow-game").classList.add('active');
+							game.load_window("window-tutorial", "Witaj w Alkatrii", "window-tutorial", undefined, "tutorial");
+						}, 1000);
+					}
+				}, data.timeout);
 				break;
 		}
 	}
