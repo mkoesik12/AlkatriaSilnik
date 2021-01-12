@@ -128,7 +128,8 @@ const gameSettings = {
 		pingTimeServer: 0,
 		stopGame: false,
 		keysStatus: 0,
-		backDirs: [2,1,3,4]
+		backDirs: [2,1,3,4],
+		data: []
 	},
 	serverWS: `wss://alkatria.pl/${window.server_host}`,
 	serverSocket: null
@@ -258,6 +259,10 @@ const gameEngine = {
 	    };
 	    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
 	},
+    getHour: () => {
+    	const time = new Date();
+		return time.getHours() + ':' + time.getMinutes();
+    },
 	parseServerPacket: (data) => {
 		if (gameSettings.clientStorage.stopGame && data.code < 3) return;
 		const code = gameSettings.serverCodes;
@@ -376,7 +381,7 @@ const gameEngine = {
 				break;
 			case code.s22:
 				document.querySelector(`tr[data-mail="${data.id}"]`).remove();
-				game.showSmallAlert("Usunięto wiadomość", 1);
+				gameEngine.showSmallAlert("Usunięto wiadomość", 1);
 				break;
 			case code.s23:
 				let count = 0;
@@ -450,7 +455,7 @@ const gameEngine = {
 				} else {
 					document.querySelector(`#other-trade-item-${data.slot_offer}`).remove();
 				}
-				if (data.message !== undefined) game.showSmallAlert(data.message);
+				if (data.message !== undefined) gameEngine.showSmallAlert(data.message);
 				if (data.item) {
 					let count = 0;
 					if (data.item.count > 1) {
@@ -459,6 +464,183 @@ const gameEngine = {
 					document.querySelector("#plecak").append(fromHTML(`<div data-id="${data.item.id}" data-count="${data.item.count}" data-tip-type="${data.item.type}" onClick="player.tradeItem(${data.to_slot})" id="item_${data.to_slot}" data-tip="${data.item.description}" class="item backpack-item-${data.to_slot} item-${data.item.id} backpack-item"><div class="count">${count}</div></div>`));
 				}
 				if (data.slot !== undefined) document.querySelector(`.backpack-item-${data.slot}`).remove();
+				break;
+			case code.s35:
+				player.animate(500);
+				player.mapMovePlayer(data.x, data.y, data.dir);
+				break;
+			case code.s36:
+				gameSettings.clientStorage.keysStatus = 1;
+				npc.postoffice_window(data);
+				break;
+			case code.s37:
+				npc.reTalk(data.data);
+				break;
+			case code.s38:
+				document.querySelector("#mini-map-image").setAttribute('src', `/assets/maps/minimap/map_${data.data.id}.png`);
+				document.querySelector(".mini-map-name").innerText = data.data.name;
+				document.querySelector(`.map_${data.data.id}`).append(fromHTML("<div class='current-mini-map'></div>"));
+				windowDisplay.displayMiniMap(data.data);
+				break;
+			case code.s39:
+				player.attack_speed = data.value;
+				break;
+			case code.s40:
+				if (data.player.id === map.current_player) map.current_player = 0;
+				document.querySelector(`#player_${data.player.id}`).remove();
+				document.querySelector(`#player_${data.player.id}-layer`).remove();
+				break;
+			case code.s41:
+				if (data.message) {
+					if (this.channel !== 2) {
+						document.querySelector(".channel-2").classList.add('new-message');
+					}
+
+					document.querySelector(".chat-messages-2").append(fromHTML(`${gameEngine.getHour()} ${data.message}<br>`));
+				}
+				player.setHealth(data.health, data.health_max);
+				break;
+			case code.s42:
+				document.querySelector(".clan-balance").innerText = data.balance;
+				player.setGold(data.gold);
+				const payment = document.querySelector(".payments-history tbody tr").length + 1;
+				document.querySelector(".payments-history tbody").append(fromHTML(`<tr><td>${payment}.</td><td>${data.name}</td><td>${data.value}</td><td>${data.type}</td><td>${data.date}</td></tr>`));
+				break;
+			case code.s43:
+				windowDisplay.displayWars(data.data);
+				break;
+			case code.s44:
+				windowDisplay.displayDiplomacy(data.data);
+				break;
+			case code.s45:
+				if (data.data.remove_id !== undefined) {
+					document.querySelector(`.clan-ally-list tbody tr[data-id="${data.data.remove_id}"]`).remove();
+					document.querySelector(`.clan-enemy tbody tr[data-id="${data.data.remove_id}"]`).remove();
+				}
+				break;
+			case code.s46:
+				gameSettings.clientStorage.stopGame = true;
+				map.current_monster = 0;
+				map.current_player = 0;
+				document.querySelector("body").classList.add("black-bg");
+				document.querySelector(".loading").classList.remove("hidden");
+				document.querySelector(".loading-death").classList.remove("hidden");
+				document.querySelector(".loading-content").classList.add("hidden");
+				document.getElementById("death-time").innerHTML = data.time;
+				player.setHealth(1, data.health);
+				
+				let timeleft = data.time;
+				
+				const downloadTimer = setInterval(function() {
+				  	timeleft--;
+				  	document.getElementById("death-time").innerHTML = timeleft;
+				}, 1000);
+
+				setTimeout(function() {
+					gameEngine.sendPacket(1019, {});
+					gameEngine.stopGame = false;
+					document.querySelector(".loading-death").classList.add("hidden");
+					document.querySelector(".loading-content").classList.remove("hidden");
+					clearInterval(downloadTimer);
+				}, (data.time * 1000));
+				break;
+			case code.s47:
+				npc.global_shop_window(data);
+				break;
+			case code.s48:
+				npc.shop_window(data);
+				windowDisplay.displayBackpack("plecak", data.backpack, 10);
+				break;
+			case code.s49:
+				spells.showPlayerAnimation(`#player_${data.player}`, data);
+				break;
+			case code.s50:
+				player.displayStats(data.data);
+				break;
+			case code.s51:
+				windowDisplay.displayClanMembers(data.list);
+				if (data.ranks.length > 0) {
+					document.querySelector(".select-clan-rank").innerText = "";
+					data.ranks.forEach((key, v) => {
+						document.querySelector(".select-clan-rank").append(fromHTML(`<option value="${v.id}">${v.name}</option>`));
+					});
+				} else {
+					alert("musisz dodać rangi");
+					gameEngine.switchDisplay("clans", "ranks");
+				}
+				break;
+			case code.s52:
+				if (data.data === undefined || data.data.type === undefined) break;
+				if (data.data !== undefined && data.data.attack_speed !== undefined) player.attack_speed = data.data.attack_speed;
+				if (data.data.type === "move_magazine") {
+					gameEngine.sendPacket(31, { state: 1004 });
+				} else if (data.data.type === "shortcut_to_backpack") {
+					document.querySelector(".player-backpack").append(document.querySelector(`.shortcut-item-${data.data.from}`));
+					document.querySelector(`.shortcut-item-${data.data.from}`).classList.add(`backpack-item-${data.data.to}`);
+					document.querySelector(`.backpack-item-${data.data.to}`).classList.remove(`shortcut-item-${data.data.from}`);
+					document.querySelector(`.backpack-item-${data.data.to}`).removeAttribute("style");
+					document.querySelector(`.backpack-item-${data.data.to}`).classList.remove("shortcut-item");
+					document.querySelector(`.backpack-item-${data.data.to}`).classList.add("backpack-item");
+					document.querySelector(`.backpack-item-${data.data.to}`).setAttribute("slot", data.data.to);
+				} else {
+					gameEngine.sendPacket(2, {window: "backpack"});
+				}//end if
+				break;
+			case code.s53:
+				npc.auction_window(data);
+				break;
+			case code.s54:
+				npc.casino_window(data);
+				break;
+			case code.s55:
+				windowDisplay.openWindow("Kowal", "npc-blacksmith", "npc-blacksmith");
+				windowDisplay.displayBackpack("plecak", data.backpack, 3);
+				break;
+			case code.s56:
+				switch (data.type) {
+					case "remove_invite":
+						document.querySelector(`.clan-invite-${data.id}`).remove();
+						break;
+					default:
+						break;
+				}
+				break;
+			case code.s57:
+				player.setExperience(data.experience, data.to_level);
+				player.showLootWindow(data.data);
+				if (data.advance !== undefined) {
+					var text = `Awansowałeś z poziomu ${data.advance.from} do poziomu ${data.advance.to}`;
+
+					if (data.advance.spell !== undefined) text += `<br><br>Odblokowano umiejętność: ${data.advance.spell}`;
+
+					gameEngine.broadCast(text);
+					player.setHealth(data.advance.health, data.advance.health_max);
+					player.setExperience(data.advance.experience, data.advance.to_level);
+					document.querySelector(".level-box").innerText = data.advance.to;
+				}
+				if (data.gold > 0) {
+					document.querySelector(".chat-messages-2").append(fromHTML(`${gameEngine.getHour()} Otrzymano ${data.gold} złota<br>`));
+					player.setGold(data.player_gold);
+				}
+				if (this.channel != 2) document.querySelector(".channel-2").classList.add("new-message");
+				document.querySelector(".chat-messages-2").append(fromHTML(`${gameEngine.getHour()} Otrzymano ${data.gained} doświadczenia<br>`));
+				break;
+			case code.s58:
+				windowDisplay.displayFriends(data.friends, data.enemies);
+				break;
+			case code.s59:
+				gameEngine.showModalQuestion(`Gracz ${data.player} zaprosił Cię do grupy.<br>Czy akceptujesz zaproszenie?`);
+				gameSettings.clientStorage.data = data;
+
+				document.getElementById("modal-accept").onclick = () => {
+					gameEngine.sendPacket(1052, {action: "accept", player: gameSettings.clientStorage.data.id});
+					gameEngine.closeModalQuestion();
+				};
+
+				document.getElementById("modal-remove").onclick = () => {
+					gameEngine.sendPacket(1052, {action: "revoke", player: gameSettings.clientStorage.data.id});
+					gameEngine.closeModalQuestion();
+				};
 				break;
 		}
 	}
