@@ -23,7 +23,7 @@
 	</div>
 
 	<div class="window-2">
-		<div class="menu-black" style="display: block; float: left;" id="page_1">
+		<div class="menu-black page_1 auction_menu" style="display: block; float: left;">
 			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 'history');">Moje Aukcje</div>
 			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 'backpack');">Dodaj Aukcję</div>
 			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 1);">Bronie</div>
@@ -34,19 +34,21 @@
 			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 9);">Naszyjniki</div>
 			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 5);">Pierścienie</div>
 			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 6);">Buty</div>
-			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 10);">Leczenie</div>
-      <center>
-        <div class="ah-nextPage overlock" onClick="game.ahNext();"></div>
-      </center>
+			<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 10);">Użytkowe</div>
+		    <center>
+		        <div class="ah-nextPage overlock" onClick="game.switch('.page_2', '.auction_menu', 'block');"></div>
+		    </center>
 		</div>
-		<div class="menu-black" style="display: none; float: left;" id="page_2">
-		        <center>
-				<div class="ah-prevPage overlock" onClick="game.ahPrev();"></div>
-		        </center>
-		        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 11);">Questowe</div>
-		        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 12);">Strzały</div>
-		        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 13);">Minerały</div>
-		        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 14);">Ulepsacze</div>
+
+		<div class="menu-black page_2 auction_menu" style="display: none; float: left;">
+	        <center>
+				<div class="ah-prevPage overlock" onClick="game.switch('.page_1', '.auction_menu', 'block');"></div>
+	        </center>
+	        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 11);">Questowe</div>
+	        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 12);">Amunicja</div>
+	        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 13);">Surowce</div>
+	        <div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 14);">Ulepszacze</div>
+		<div class="button-2 mB5 overlock font-20" onClick="game.singlePacket('auctions', 15);">Narzędzia</div>
 			<div class="button-2 overlock font-20" onClick="game.singlePacket('auctions', 8);">Inne</div>
 		</div>
 
@@ -69,7 +71,7 @@
 								<th style="width: 32px;">#</th>
 								<th>Przedmiot</th>
 								<th>Cena</th>
-								<th>Wystawił</th>
+								<th>WystawiĹ</th>
 								<th class="w60px"></th>
 							</tr>
 						</thead>
@@ -104,10 +106,10 @@
 				<div style="width: 275px; height: 505px;">
 					<div class="overlock-white font-28">Aukcje</div><br />
 
-					System aukcji pozwala na sprzedaż przedmiotu innemu graczowi będąc offline.
+					System aukcji pozwala na sprzedaĹź przedmiotu innemu graczowi bÄdÄc offline.
 				</div>
 
-				<div id="currentOpis" class="black-box" style="width:416px; height: 128px; overflow: auto; position: absolute; top: 0px; left: 275px; color:white;">Kliknij na przedmiot, aby dodać aukcję.</div>
+				<div id="currentOpis" class="black-box" style="width:416px; height: 128px; overflow: auto; position: absolute; top: 0px; left: 275px; color:white;">Kliknij na przedmiot, aby dodaÄ aukcjÄ.</div>
 
 				<div style="left: 370px; position: absolute; top: 154px; width: 300px;">
 					<form id="form-1" action="javascript:game.sendForm(1, 'auctions', 'add');">
