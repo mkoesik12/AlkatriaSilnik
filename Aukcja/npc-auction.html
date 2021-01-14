@@ -23,7 +23,7 @@
 			if (searchProf === "m") {
 				document.querySelector("#search-profession").style.textIndent = "41px";
 				document.querySelectorAll("td > div[data-tip-item]").forEach((key,value) => {
-				    if(!key.getAttribute("data-tip-item").includes('Mag')) {
+				    if(!key.getAttribute("data-tip-item").includes('Mag') && key.getAttribute("data-tip-item").includes('Profesja')) {
 					key.parentNode.parentNode.style.display = "none";
 				    } else {
 					key.parentNode.parentNode.style.display = "table-row";
@@ -32,7 +32,7 @@
 			} else if (searchProf === "l") {
 				document.querySelector("#search-profession").style.textIndent = "36px";
 				document.querySelectorAll("td > div[data-tip-item]").forEach((key,value) => {
-				    if(!key.getAttribute("data-tip-item").includes('Łowca')) {
+				    if(!key.getAttribute("data-tip-item").includes('Łowca') && key.getAttribute("data-tip-item").includes('Profesja')) {
                         		key.parentNode.parentNode.style.display = "none";
                     		    } else {
                        			key.parentNode.parentNode.style.display = "table-row";
@@ -41,7 +41,7 @@
 			} else if (searchProf === "w") {
 				document.querySelector("#search-profession").style.textIndent = "25px";
 				document.querySelectorAll("td > div[data-tip-item]").forEach((key,value) => {
-				    if(!key.getAttribute("data-tip-item").includes('Wojownik')) {
+				    if(!key.getAttribute("data-tip-item").includes('Wojownik') && key.getAttribute("data-tip-item").includes('Profesja')) {
 					key.parentNode.parentNode.style.display = "none";
 				    } else {
 					key.parentNode.parentNode.style.display = "table-row";
@@ -55,7 +55,9 @@
 			}
 		} else if (data === "name") {
 			const searchName = document.querySelector("#search-name").value;
-			
+			document.querySelectorAll('.auction-list tbody tr').forEach((key,value) => {
+                		key.innerText.includes(searchName) ? key.style.display = "table-row" : key.style.display = "none";
+			});
 		}
 	}
 </script>
