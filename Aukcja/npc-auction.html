@@ -16,6 +16,49 @@
     text-align: center;
   }
 </style>
+<script>
+	game.auctionSearch = (data) => {
+		if(data === "profession") {
+			const searchProf = document.querySelector("#search-profession").value;
+			if (searchProf === "m") {
+				document.querySelector("#search-profession").style.textIndent = "41px";
+				document.querySelectorAll("td > div[data-tip-item]").forEach((key,value) => {
+				    if(!key.getAttribute("data-tip-item").includes('Mag')) {
+					key.parentNode.parentNode.style.display = "none";
+				    } else {
+					key.parentNode.parentNode.style.display = "table-row";
+				    }
+				});
+			} else if (searchProf === "l") {
+				document.querySelector("#search-profession").style.textIndent = "36px";
+				document.querySelectorAll("td > div[data-tip-item]").forEach((key,value) => {
+				    if(!key.getAttribute("data-tip-item").includes('Łowca')) {
+                        		key.parentNode.parentNode.style.display = "none";
+                    		    } else {
+                       			key.parentNode.parentNode.style.display = "table-row";
+                    		    }
+				});
+			} else if (searchProf === "w") {
+				document.querySelector("#search-profession").style.textIndent = "25px";
+				document.querySelectorAll("td > div[data-tip-item]").forEach((key,value) => {
+				    if(!key.getAttribute("data-tip-item").includes('Wojownik')) {
+					key.parentNode.parentNode.style.display = "none";
+				    } else {
+					key.parentNode.parentNode.style.display = "table-row";
+                    		    }
+				});
+			} else if (searchProf === "all") {
+				document.querySelector("#search-profession").style.textIndent = "23px";
+				document.querySelectorAll("td > div[data-tip-item]").forEach((key,value) => {
+				    key.parentNode.parentNode.style.display = "table-row";
+				});
+			}
+		} else if (data === "name") {
+			const searchName = document.querySelector("#search-name").value;
+			
+		}
+	}
+</script>
 <div id="auctionBox">
 	<div class="window-2-heading">
 		<div class="title-label overlock font-28 draggable" data-box="#auctionBox">Aukcje</div>
@@ -55,8 +98,8 @@
 		<div id="auction-content" class="black-content" style="width: 715px; position: absolute; left: 275px; top: 82px;">
 				<div class="auction-data auction-box" style="display: none">
 					<div class="search-auctions h50px mT10"><div class="overlock font-15" data-box="#searchBox">
-					    Nazwa: <input type="text" class="button-2 mB5 overlock font-20">
-					    Profesja: <select class="button-1 overlock font-15" id="search-profession" value="" style="height:36px; text-indent: 23px;">
+					    Nazwa: <input type="text" id="search-name" onchange="game.auctionSearch('name')" class="button-2 mB5 overlock font-20">
+					    Profesja: <select class="button-1 overlock font-15" id="search-profession" onchange="game.auctionSearch('profession')" style="height:36px; text-indent: 23px;">
 								<option value="all">Wszystkie</option>
 					  			<option value="m">Mag</option>
 					  			<option value="l">Lowca</option>
