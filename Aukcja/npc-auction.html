@@ -53,17 +53,18 @@
 		</div>
 
 		<div id="auction-content" class="black-content" style="width: 715px; position: absolute; left: 275px; top: 82px;">
-			<div class="auction-data auction-box" style="display: none">
-				<div class="search-auctions h50px mT10">
-					<input type="text" class="auction-search form-input" value="">
-					Cena:
-					<input type="text" class="auction-price-from auction-price form-input w75px" value="" placeholder="Od">
-					<input type="text" class="auction-price-to auction-price form-input w75px" value="" placeholder="Do">
-					Poziom:
-					<input type="text" class="auction-level-from auction-level form-input w75px" value="" placeholder="Od">
-					<input type="text" class="auction-level-to auction-level form-input w75px" value="" placeholder="Do">
+				<div class="auction-data auction-box" style="display: none">
+					<div class="search-auctions h50px mT10"><div class="overlock font-15" data-box="#searchBox">
+					    Nazwa: <input type="text" class="button-2 mB5 overlock font-20">
+					    Profesja: <select class="button-1 overlock font-15" id="search-profession" value="" style="height:36px; text-indent: 23px;">
+								<option value="all">Wszystkie</option>
+					  			<option value="m">Mag</option>
+					  			<option value="l">Lowca</option>
+					  			<option value="w">Wojownik</option>
+							</select>
+					
+					</div>
 				</div>
-
 				<div class="overflow-auto h463px">
 					<table class="auction-list table-default">
 						<thead>
