@@ -50,7 +50,7 @@
 			} else if (searchProf === "all") {
 				document.querySelector("#search-profession").style.textIndent = "23px";
 				document.querySelectorAll("td > div[data-tip-item]").forEach((key,value) => {
-				    key.parentNode.parentNode.style.display = "table-row";
+				    key.parentNode.parentNode.style.display = "";
 				});
 			}
 		} else if (data === "name") {
@@ -58,6 +58,56 @@
 			document.querySelectorAll('.auction-list tbody tr').forEach((key,value) => {
                 		key.innerText.includes(searchName) ? key.style.display = "table-row" : key.style.display = "none";
 			});
+		} else if (data === "rarity") {
+			const searchRarity = document.querySelector("#search-rarity").value;
+			if(searchRarity === "all") {
+				document.querySelector("#search-rarity").style.textIndent = "23px";
+				document.querySelectorAll("td > div[data-tip-item]").forEach((key,value) => {
+				    key.parentNode.parentNode.style.display = "";
+				});
+			} else if(searchRarity === "normal") {
+				document.querySelector("#search-rarity").style.textIndent = "35px";
+				document.querySelectorAll("td > div[data-tip-type]").forEach((key,value) => {
+				    const type = parseInt(key.getAttribute("data-tip-type"));
+				    type === 0 ? key.parentNode.parentNode.style.display = "table-row" : key.parentNode.parentNode.style.display = "none";
+				});
+			} else if(searchRarity === "rare") {
+				document.querySelector("#search-rarity").style.textIndent = "32px";
+				document.querySelectorAll("td > div[data-tip-type]").forEach((key,value) => {
+				    const type = parseInt(key.getAttribute("data-tip-type"));
+				    type === 1 ? key.parentNode.parentNode.style.display = "table-row" : key.parentNode.parentNode.style.display = "none";
+				});
+			} else if(searchRarity === "rare+") {
+				document.querySelector("#search-rarity").style.textIndent = "29px";
+				document.querySelectorAll("td > div[data-tip-type]").forEach((key,value) => {
+				    const type = parseInt(key.getAttribute("data-tip-type"));
+				    type > 0 ? key.parentNode.parentNode.style.display = "table-row" : key.parentNode.parentNode.style.display = "none";
+				});
+			} else if(searchRarity === "epic") {
+				document.querySelector("#search-rarity").style.textIndent = "33px";
+				document.querySelectorAll("td > div[data-tip-type]").forEach((key,value) => {
+				    const type = parseInt(key.getAttribute("data-tip-type"));
+				    type === 2 ? key.parentNode.parentNode.style.display = "table-row" : key.parentNode.parentNode.style.display = "none";
+				});
+			} else if(searchRarity === "epic+") {
+				document.querySelector("#search-rarity").style.textIndent = "30px";
+				document.querySelectorAll("td > div[data-tip-type]").forEach((key,value) => {
+				    const type = parseInt(key.getAttribute("data-tip-type"));
+				    type > 1 ? key.parentNode.parentNode.style.display = "table-row" : key.parentNode.parentNode.style.display = "none";
+				});
+			} else if(searchRarity === "legendary") {
+				document.querySelector("#search-rarity").style.textIndent = "20px";
+				document.querySelectorAll("td > div[data-tip-type]").forEach((key,value) => {
+				    const type = parseInt(key.getAttribute("data-tip-type"));
+				    type === 3 ? key.parentNode.parentNode.style.display = "table-row" : key.parentNode.parentNode.style.display = "none";
+				});
+			} else if(searchRarity === "mythical") {
+				document.querySelector("#search-rarity").style.textIndent = "28px";
+				document.querySelectorAll("td > div[data-tip-type]").forEach((key,value) => {
+				    const type = parseInt(key.getAttribute("data-tip-type"));
+				    type === 4 ? key.parentNode.parentNode.style.display = "table-row" : key.parentNode.parentNode.style.display = "none";
+				});
+			}
 		}
 	}
 </script>
@@ -102,20 +152,20 @@
 					<div class="search-auctions h50px mT10"><div class="overlock font-15" data-box="#searchBox">
 					    Nazwa: <input type="text" id="search-name" onchange="game.auctionSearch('name')" class="button-2 mB5 overlock font-20">
 					    Profesja: <select class="button-1 overlock font-15" id="search-profession" onchange="game.auctionSearch('profession')" style="height:36px; text-indent: 23px;">
-								<option value="all">Wszystkie</option>
-					  			<option value="m">Mag</option>
-					  			<option value="l">Lowca</option>
-					  			<option value="w">Wojownik</option>
+								<option style="color:black" value="all">Wszystkie</option>
+					  			<option style="color:black" value="m">Mag</option>
+					  			<option style="color:black" value="l">Lowca</option>
+					  			<option style="color:black" value="w">Wojownik</option>
 							</select>
-					   Rzadkość: <select class="button-1 overlock font-15" id="search-profession" onchange="game.auctionSearch('profession')" style="height:36px; text-indent: 23px;">
-								<option value="all">Wszystkie</option>
-								<option value="normal">Zwykłe</option>
-								<option value="rare">Rzadkie</option>
-								<option value="rare+">Rzadkie+</option>
-								<option value="epic">Epickie</option>
-								<option value="epic+">Epickie+</option>
-								<option value="legendary">Legendarne</option>
-								<option value="mythical">Mityczne</option>
+					   Rzadkość: <select class="button-1 overlock font-15" id="search-rarity" onchange="game.auctionSearch('rarity')" style="height:36px; text-indent: 23px;">
+								<option style="color:black" value="all">Wszystkie</option>
+								<option style="color:black" value="normal">Zwykłe</option>
+								<option style="color:black" value="rare">Rzadkie</option>
+								<option style="color:black" value="rare+">Rzadkie+</option>
+								<option style="color:black" value="epic">Epickie</option>
+								<option style="color:black" value="epic+">Epickie+</option>
+								<option style="color:black" value="legendary">Legendarne</option>
+								<option style="color:black" value="mythical">Mityczne</option>
 						     </select>
 					</div>
 				</div>
@@ -125,7 +175,7 @@
 							<tr>
 								<th style="width: 32px;">#</th>
 								<th>Przedmiot</th>
-								<th>Cena</th>
+								<th >Cena</th>
 								<th>WystawiĹ</th>
 								<th class="w60px"></th>
 							</tr>
