@@ -23,7 +23,7 @@ class alkatriaPagination {
     }
     alkaLogic(totalPages) {
         const currentPage = totalPages;
-        const range = 5;
+        const range = 6;
         const totalItems = 10;
 
         const paging = [];
@@ -40,18 +40,23 @@ class alkatriaPagination {
 
         for (let i = start; i <= ((start + range) - 1); i++) {
             if (i === currentPage) {
-                paging.push(`<div class="magazine-page current" data-page="${i}">${i}</div>`);
+                paging.push(`<div class="auction-page current" onclick="currPagination.setPage(${i})">${i}</div>`);
             } else {
-                paging.push(`<div class="magazine-page" data-page="${i}">${i}</div>`);
+                paging.push(`<div class="auction-page" onclick="currPagination.setPage(${i})">${i}</div>`);
             }
         }
         return paging.join("");
     }
-    init() {
+    setPage(pageSelected) {
         const pages = this.getPages();
-        console.log(pages)
+        this.currPage = pageSelected;
+        document.querySelector("#alkatriaPagination").parentNode.innerHTML = `<div id="alkatriaPagination">${this.alkaLogic(pageSelected)}</div>`;
+    }
+    init() {
+        window.currPagination = this;
+        const pages = this.getPages();
         const tableFoot = document.createElement("tfoot");
-        tableFoot.innerHTML = `<div id="alkatriaPagination">${this.alkaLogic(pages)}</div>`;
-        document.querySelector(".auction-list").appendChild(tableFoot)
+        tableFoot.innerHTML = `<div id="alkatriaPagination">${this.alkaLogic(this.currPage)}</div>`;
+        document.querySelector(".auction-list").appendChild(tableFoot);
     }
 }
