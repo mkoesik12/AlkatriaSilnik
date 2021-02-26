@@ -166,7 +166,7 @@ const gameEngine = {
 		return false;
 	},
 	init: () => {
-		loadScript(gameLib.axios);
+		gameEngine.loadScript(gameLib.axios);
 		document.querySelector(".opacity-full").classList.add("hidden");
 		document.querySelector(".loading-info").innerText = "Ładowanie gry...";
 		try {
